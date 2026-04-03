@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Study & Idea Hub</title>
+    <style>
+        :root { --main-bg: #f4f7f6; --accent: #4a90e2; --text: #333; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--main-bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--accent); }
+        
+        /* 시간표 스타일 */
+        .section { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: center; }
+        th, td { border: 1px solid #ddd; padding: 10px; font-size: 0.9rem; }
+        th { background: var(--accent); color: white; }
+
+        /* 아이디어 기록 스타일 */
+        .idea-input { display: flex; gap: 10px; margin-bottom: 15px; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .idea-list { list-style: none; padding: 0; }
+        .idea-item { background: #f9f9f9; padding: 10px; border-left: 5px solid var(--accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { color: red; cursor: pointer; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>학습 & 탐구 매니저</h1>
+
+    <div class="section">
+        <h2>📅 주간 시간표</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>교시</th>
+                    <th>월</th>
+                    <th>화</th>
+                    <th>수</th>
+                    <th>목</th>
+                    <th>금</th>
+                </tr>
+            </thead>
+            <tbody id="timetable-body">
+                <tr><td>1</td><td>수학</td><td>영어</td><td>물리</td><td>정보</td><td>화학</td></tr>
+                <tr><td>2</td><td>국어</td><td>수학</td><td>체육</td><td>영어</td><td>생명</td></tr>
+                <tr><td>3</td><td>영어</td><td>지구과학</td><td>수학</td><td>기술</td><td>사회</td></tr>
+                <tr><td>4</td><td>정보</td><td>국어</td><td>자율</td><td>물리</td><td>수학</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>💡 탐구 아이디어 기록장</h2>
+        <div class="idea-input">
+            <input type="text" id="ideaInput" placeholder="새로운 공학 아이디어나 주제를 적어보세요...">
+            <button onclick="addIdea()">기록하기</button>
+        </div>
+        <ul id="ideaList" class="idea-list">
+            </ul>
+    </div>
+</div>
+
+<script>
+    // 아이디어 추가 함수
+    function addIdea() {
+        const input = document.getElementById('ideaInput');
+        const text = input.value;
+        if (text === '') return;
+
+        const li = document.createElement('li');
+        li.className = 'idea-item';
+        li.innerHTML = `
+            <span>${text}</span>
+            <span class="delete-btn" onclick="this.parentElement.remove()">삭제</span>
+        `;
+        
+        document.getElementById('ideaList').appendChild(li);
+        input.value = '';
+        
+        // 로컬스토리지 저장 기능 (브라우저를 닫아도 유지됨)
+        saveIdeas();
+    }
+
+    function saveIdeas() {
+        const ideas = [];
+        document.querySelectorAll('.idea-item span:first-child').forEach(item => ideas.push(item.innerText));
+        localStorage.setItem('myIdeas', JSON.stringify(ideas));
+    }
+
+    window.onload = () => {
+        const saved = JSON.parse(localStorage.getItem('myIdeas') || '[]');
+        saved.forEach(text => {
+            const li = document.createElement('li');
+            li.className = 'idea-item';
+            li.innerHTML = `<span>${text}</span><span class="delete-btn" onclick="this.parentElement.remove(); saveIdeas();">삭제</span>`;
+            document.getElementById('ideaList').appendChild(li);
+        });
+    }
+</script>
+
+</body>
+</html>
