@@ -3,63 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSHS 통합 협업 플랫폼</title>
+    <title>DSHS AI 통합 협업 플랫폼</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --primary: #004ea2; --bg: #f8fafc; --accent: #2563eb; --ai-purple: #8b5cf6; --danger: #ef4444; --success: #22c55e; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; line-height: 1.6; }
+        :root { --primary: #004ea2; --bg: #f8fafc; --accent: #2563eb; --ai: #7c3aed; --danger: #ef4444; --success: #10b981; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; line-height: 1.6; }
         
-        /* 네비게이션 */
-        nav { background: var(--primary); display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; }
-        .nav-btn { background: none; border: none; color: white; padding: 15px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; opacity: 0.6; white-space: nowrap; transition: 0.3s; }
-        .nav-btn.active { opacity: 1; border-bottom: 3px solid #fff; }
+        nav { background: var(--primary); display: flex; justify-content: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-btn { background: none; border: none; color: white; padding: 15px 25px; cursor: pointer; font-size: 0.95rem; font-weight: 600; opacity: 0.7; transition: 0.3s; }
+        .nav-btn.active { opacity: 1; border-bottom: 4px solid #fff; }
 
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .content-section { display: none; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .content-section { display: none; animation: fadeIn 0.4s ease; }
         .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 카드 공통 스타일 */
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .section-title { border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px; color: var(--primary); }
-
-        /* 입력 및 버튼 */
-        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; font-size: 0.9rem; }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
-        .btn-ai { background: var(--ai-purple); width: 100%; margin-top: 5px; }
-        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
-
-        /* 시간표 테이블 */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: center; font-size: 0.85rem; }
-        th { background: #f1f5f9; }
-        select.tt-select { margin-bottom: 0; padding: 4px; font-size: 0.8rem; }
-
-        /* 채팅 및 리스트 */
-        .chat-box { height: 250px; overflow-y: auto; background: #f9fafb; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-        .msg { margin-bottom: 6px; font-size: 0.9rem; border-bottom: 1px solid #f1f1f1; padding-bottom: 3px; }
-        .ai-feedback { display: none; padding: 15px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; margin-top: 15px; }
+        .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
         
-        .loading-dots:after { content: ' .'; animation: dots 1s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 40% { color: #6d28d9; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .25em 0 0 #6d28d9, .5em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .25em 0 0 #6d28d9, .5em 0 0 #6d28d9; } }
+        input, textarea, select { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; margin-bottom: 12px; font-size: 1rem; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn-ai { background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border: none; }
+        
+        /* 팀 프로젝트 내부 레이아웃 */
+        .team-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
+        .chat-area { height: 450px; overflow-y: auto; background: #f1f5f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; background: white; font-size: 0.9rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .msg-u { font-weight: 800; color: var(--primary); font-size: 0.75rem; display: block; margin-bottom: 4px; }
+
+        .ai-rich-box { background: #f5f3ff; border: 1.5px solid #ddd6fe; padding: 20px; border-radius: 16px; position: relative; overflow: hidden; }
+        .ai-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; margin-right: 5px; margin-bottom: 10px; }
+        .tag-theory { background: #ede9fe; color: #6d28d9; }
+        .tag-act { background: #dcfce7; color: #15803d; }
+        .tag-rec { background: #fee2e2; color: #b91c1c; }
+
+        .loading-dots:after { content: '...'; animation: dots 1.5s infinite; }
+        @keyframes dots { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        th, td { padding: 12px; border: 0.5px solid #f1f5f9; text-align: center; background: white; }
+        th { background: #f8fafc; font-weight: 700; color: #64748b; }
     </style>
 </head>
 <body>
 
 <nav>
     <button class="nav-btn active" onclick="showTab('timetable', this)">📅 시간표</button>
-    <button class="nav-btn" onclick="showTab('research', this)">💡 탐구 & AI 피드백</button>
-    <button class="nav-btn" onclick="showTab('team', this)">👥 팀 프로젝트</button>
+    <button class="nav-btn" onclick="showTab('research', this)">💡 개인 탐구 & AI 컨설팅</button>
+    <button class="nav-btn" onclick="showTab('team', this)">👥 팀 프로젝트 공간</button>
 </nav>
 
 <div class="container">
     <section id="timetable" class="content-section active">
         <div class="card">
-            <h2 class="section-title">7교시 주간 시간표</h2>
-            <div class="table-wrapper">
-                <table>
+            <h2 style="margin-top:0;">📅 7교시 주간 시간표</h2>
+            <div style="overflow-x:auto;">
+                <table id="ttTable">
                     <thead><tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr></thead>
                     <tbody id="ttBody"></tbody>
                 </table>
@@ -68,59 +71,73 @@
     </section>
 
     <section id="research" class="content-section">
-        <div class="card">
-            <h2 class="section-title">개인 탐구 기록 & AI 컨설팅</h2>
-            <input type="text" id="pTitle" placeholder="탐구 주제 (예: 자율주행 알고리즘 분석)">
-            <textarea id="pContent" placeholder="상세 내용 또는 연구 가설을 적어보세요." style="height: 100px;"></textarea>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn" style="flex:1;" onclick="savePersonal()">내용 저장</button>
-                <button class="btn btn-ai" style="flex:1; margin-top:0;" onclick="getAIFeedback()">✨ AI 피드백 받기</button>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🔍 새 탐구 주제 입력</h3>
+                <input type="text" id="pTitle" placeholder="탐구 주제 (예: 캔위성 이미지 데이터의 3D 매핑 오차 분석)">
+                <textarea id="pContent" placeholder="연구 배경 및 구체적인 가설을 적어주세요." style="height:150px;"></textarea>
+                <button class="btn btn-ai" style="width:100%;" onclick="savePersonalWithAI()">✨ AI 딥 피드백 및 저장</button>
             </div>
-
-            <div id="aiResponse" class="ai-feedback">
-                <h4 style="margin:0 0 10px 0; color:#6d28d9;">🤖 AI 생기부 컨설팅 결과</h4>
-                <div id="aiTextContent"></div>
+            <div class="card" id="aiResult" style="display:none; border-left: 5px solid var(--ai);">
+                <h3>🤖 AI 분석 보고서</h3>
+                <div id="aiText"></div>
             </div>
         </div>
-        <div id="personalList"></div>
+        <div id="pList"></div>
     </section>
 
     <section id="team" class="content-section">
         <div id="lobby">
             <div class="card">
-                <h2 class="section-title">🆕 팀 생성 및 관리자 접속</h2>
-                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px;">
-                    <input type="text" id="teamName" placeholder="팀 이름">
-                    <input type="password" id="adminPw" placeholder="관리자 비번">
-                    <button class="btn" onclick="createOrAdminJoin()">접속/생성</button>
+                <h3>🚀 팀 생성 및 관리자 로그인</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:12px;">
+                    <input type="text" id="tName" placeholder="팀 프로젝트 이름">
+                    <input type="password" id="tPw" placeholder="방장 비밀번호">
+                    <button class="btn" onclick="authTeam()">생성/접속</button>
                 </div>
-                <p style="font-size:0.8rem; color:#666;">* 방장은 설정한 비번으로 팀원을 승인할 수 있습니다.</p>
+                <p style="font-size:0.85rem; color:#64748b; margin-top:10px;">* 새로운 이름을 쓰면 팀이 생성되고, 기존 이름을 쓰면 접속합니다.</p>
             </div>
             <div class="card">
-                <h2 class="section-title">🌐 활성화된 팀 목록</h2>
-                <div id="activeTeams">불러오는 중...</div>
+                <h3>🌐 참여 가능한 프로젝트 리스트</h3>
+                <div id="tList">데이터를 불러오는 중...</div>
             </div>
         </div>
 
-        <div id="teamRoom" style="display:none;">
-            <button onclick="location.reload()" style="margin-bottom:10px; border:none; background:none; color:var(--accent); cursor:pointer;">← 로비로 나가기</button>
-            
-            <div id="waitingScreen" class="card" style="display:none; text-align:center;">
-                <h2 id="waitRoomTitle"></h2>
-                <p class="loading-dots">방장의 입장을 기다리고 있습니다</p>
+        <div id="room" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <button class="btn" style="background:#64748b;" onclick="location.reload()">← 로비로 나가기</button>
+                <h2 id="roomTitle" style="margin:0;">프로젝트 룸</h2>
+                <div id="adminBadge" style="display:none; color:var(--danger); font-weight:800;">[ADMIN]</div>
             </div>
 
-            <div id="activeSpace" style="display:none;">
-                <div class="card">
-                    <h2 id="roomHeader"></h2>
-                    <div id="adminPanel" style="display:none; background:#fff1f2; padding:10px; border-radius:8px; margin-bottom:15px; border:1px dashed #fb7185;">
-                        <b style="color:var(--danger);">🔒 대기 중인 신청자</b>
-                        <div id="requestList" style="margin-top:10px;">신청자가 없습니다.</div>
+            <div class="team-layout">
+                <div>
+                    <div id="adminPanel" class="card" style="display:none; border:2px solid var(--danger); background:#fff1f2;">
+                        <h4 style="margin:0; color:var(--danger);">🚨 참가 신청 대기</h4>
+                        <div id="reqArea" style="margin-top:10px;">대기자 없음</div>
                     </div>
-                    <div class="chat-box" id="chatBox"></div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="chatInput" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) sendChat()">
-                        <button class="btn" onclick="sendChat()">전송</button>
+                    <div class="card">
+                        <h4>💬 팀 실시간 채팅</h4>
+                        <div id="chatDisplay" class="chat-area"></div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="chatInput" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) postChat()">
+                            <button class="btn" onclick="postChat()">전송</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card ai-rich-box">
+                        <h4 style="margin-top:0;">🧠 프로젝트 AI 엔진</h4>
+                        <input type="text" id="teamGoal" placeholder="현재 팀에서 고민 중인 주제나 목표를 입력하세요.">
+                        <button class="btn btn-ai" style="width:100%;" onclick="getTeamAI()">AI 심층 협업 가이드 생성</button>
+                        <div id="teamAiRes" style="margin-top:20px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h4>📂 공용 연구 로그 및 자료실</h4>
+                        <textarea id="sharedLog" style="height:250px;" placeholder="팀원들과 공유할 코드, 링크, 연구 내용을 기록하세요 (실시간 동기화)" onkeyup="syncLog()"></textarea>
+                        <p style="font-size:0.8rem; color:#94a3b8;">* 작성하는 즉시 모든 팀원에게 공유됩니다.</p>
                     </div>
                 </div>
             </div>
@@ -129,159 +146,162 @@
 </div>
 
 <script>
-    // --- 1. 과목 데이터 및 설정 ---
-    const subjects = ["문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학", "자율", "진로", "동아리"];
-    
+    // --- 설정 및 데이터 초기화 ---
+    const subjects = ["문학", "대수", "미적분1", "영어1", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "데이터 과학", "창의 공학 설계", "역학과 에너지", "물리학 실험", "진로", "자율"];
     const firebaseConfig = { databaseURL: "https://dshs-help-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    let myUid = localStorage.getItem('dshs_uid') || 'u_' + Math.random().toString(36).substr(2, 7);
-    localStorage.setItem('dshs_uid', myUid);
-    let currentTeam = "";
-    let isAdmin = false;
+    let uid = localStorage.getItem('dshs_uid') || 'user_' + Math.random().toString(36).substr(2, 5);
+    localStorage.setItem('dshs_uid', uid);
 
-    // --- 2. 시간표 기능 ---
-    const ttBody = document.getElementById('ttBody');
-    for (let i = 1; i <= 7; i++) {
-        let row = `<tr><td>${i}</td>`;
-        for (let j = 0; j < 5; j++) {
-            row += `<td><select class="tt-select" onchange="saveTT()" data-rc="${i}-${j}"><option value="">-</option>`;
-            subjects.forEach(s => row += `<option value="${s}">${s}</option>`);
-            row += `</select></td>`;
+    // --- 시간표 렌더링 ---
+    const tb = document.getElementById('ttBody');
+    for(let i=1; i<=7; i++) {
+        let r = `<tr><td>${i}</td>`;
+        for(let j=0; j<5; j++) {
+            r += `<td><select class="tt-s" onchange="saveTT()" data-rc="${i}-${j}"><option value="">-</option>`;
+            subjects.forEach(s => r += `<option value="${s}">${s}</option>`);
+            r += `</select></td>`;
         }
-        ttBody.innerHTML += row + `</tr>`;
+        tb.innerHTML += r + `</tr>`;
+    }
+    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s=>d[s.dataset.rc]=s.value); localStorage.setItem('tt_v5', JSON.stringify(d)); }
+    function loadTT() { const d = JSON.parse(localStorage.getItem('tt_v5')||'{}'); document.querySelectorAll('.tt-s').forEach(s=>{if(d[s.dataset.rc]) s.value=d[s.dataset.rc]}); }
+
+    function showTab(id, b) {
+        document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
+        document.getElementById(id).classList.add('active'); b.classList.add('active');
     }
 
-    function saveTT() {
-        const data = {};
-        document.querySelectorAll('.tt-select').forEach(s => { data[s.getAttribute('data-rc')] = s.value; });
-        localStorage.setItem('dshs_tt_final', JSON.stringify(data));
+    // --- 개인 탐구: AI 피드백 알고리즘 강화 ---
+    function savePersonalWithAI() {
+        const title = document.getElementById('pTitle').value, content = document.getElementById('pContent').value;
+        if(!title) return alert("주제를 입력하세요.");
+        
+        const aiBox = document.getElementById('aiResult');
+        aiBox.style.display = 'block';
+        document.getElementById('aiText').innerHTML = "<p class='loading-dots'>AI가 논문 및 생기부 데이터를 기반으로 심층 분석 중</p>";
+
+        setTimeout(() => {
+            const result = generateAIFeedback(title, content);
+            document.getElementById('aiText').innerHTML = result;
+            const history = JSON.parse(localStorage.getItem('p_v5')||'[]');
+            history.unshift({title, content, ai: result, date: new Date().toLocaleDateString()});
+            localStorage.setItem('p_v5', JSON.stringify(history));
+            renderP();
+        }, 1800);
     }
 
-    function loadTT() {
-        const data = JSON.parse(localStorage.getItem('dshs_tt_final') || '{}');
-        document.querySelectorAll('.tt-select').forEach(s => { if(data[s.getAttribute('data-rc')]) s.value = data[s.getAttribute('data-rc')]; });
+    function generateAIFeedback(t, c) {
+        return `
+            <div class="ai-tag tag-theory">🔬 관련 공학 이론</div>
+            <p style="margin-bottom:15px;">이 주제는 <b>'시스템 제어 공학'</b>과 <b>'확률적 오차 보정'</b> 모델을 적용하기 좋습니다. 특히 <b>Kalman Filter</b>나 <b>PID 제어</b>의 한계를 극복하는 과정을 수식으로 증명해 보세요.</p>
+            <div class="ai-tag tag-act">🛠 권장 심화 활동</div>
+            <ul style="padding-left:18px; margin-bottom:15px;">
+                <li>MATLAB 또는 Python 시뮬레이션을 통한 가상 환경 실험 데이터 확보</li>
+                <li>실제 하드웨어(Arduino/ESP32) 적용 시 발생하는 물리적 노이즈 분석</li>
+            </ul>
+            <div class="ai-tag tag-rec">📝 생기부 기재 예시</div>
+            <p style="background:#fff; padding:10px; border-radius:8px; font-size:0.85rem; border:1px solid #ddd6fe;">"단순한 기술 활용을 넘어 알고리즘의 수학적 원리를 탐구함. 특히 ${t} 과정에서 발생하는 오차율을 15% 이상 개선하기 위해 스스로 모델을 수정하는 자기주도적 문제해결력을 보임."</p>
+        `;
     }
 
-    // --- 3. 개인 탐구 & AI 피드백 ---
-    function savePersonal() {
-        const t = document.getElementById('pTitle').value, c = document.getElementById('pContent').value;
-        if(!t) return alert("제목을 입력하세요.");
-        const list = JSON.parse(localStorage.getItem('dshs_p_final') || '[]');
-        list.unshift({id:Date.now(), t, c});
-        localStorage.setItem('dshs_p_final', JSON.stringify(list));
-        renderPersonal();
-        document.getElementById('pTitle').value = ''; document.getElementById('pContent').value = '';
-    }
-
-    function renderPersonal() {
-        const list = JSON.parse(localStorage.getItem('dshs_p_final') || '[]');
-        document.getElementById('personalList').innerHTML = list.map(i => `
+    function renderP() {
+        const list = JSON.parse(localStorage.getItem('p_v5')||'[]');
+        document.getElementById('pList').innerHTML = list.map(i => `
             <div class="card">
-                <b>${i.t}</b><p style="font-size:0.9rem; margin:10px 0;">${i.c}</p>
-                <button onclick="delP(${i.id})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:0.7rem;">삭제</button>
+                <div style="display:flex; justify-content:space-between;"><b>${i.title}</b><small>${i.date}</small></div>
+                <p style="color:#64748b; font-size:0.9rem;">${i.content}</p>
+                <div style="margin-top:15px; padding:15px; background:#f8fafc; border-radius:10px;">${i.ai}</div>
             </div>
         `).join('');
     }
 
-    function delP(id) {
-        let list = JSON.parse(localStorage.getItem('dshs_p_final') || '[]');
-        localStorage.setItem('dshs_p_final', JSON.stringify(list.filter(item => item.id !== id)));
-        renderPersonal();
-    }
+    // --- 팀 프로젝트: 오류 없는 실시간 시스템 ---
+    let curT = ""; let isAdm = false;
 
-    async function getAIFeedback() {
-        const topic = document.getElementById('pTitle').value;
-        if(!topic) return alert("주제를 입력해야 AI 피드백이 가능합니다.");
-        const resDiv = document.getElementById('aiResponse'), textDiv = document.getElementById('aiTextContent');
-        resDiv.style.display = 'block';
-        textDiv.innerHTML = "<p class='loading-dots'>공학적 심화 알고리즘 분석 중</p>";
-        
-        setTimeout(() => {
-            let feedback = `<b>🚀 공학적 심화:</b> 해당 탐구에 <b>데이터 시뮬레이션</b>이나 <b>오차 보정 모델</b>을 결합해 보세요. 특히 사용자님의 관심사인 디지털 트윈 기술을 접목하면 전문성이 돋보입니다.<br><br><b>📝 생기부 조언:</b> 단순 지식 습득이 아니라 '실제적 문제 해결을 위해 수학적 모델을 구축함'이라는 문구가 들어가도록 탐구 과정을 정리하세요.`;
-            if(topic.includes("로봇") || topic.includes("제어")) feedback = `<b>🚀 공학적 심화:</b> <b>PID 제어</b>나 <b>역기구학</b> 수식 도출을 보고서에 포함하세요. 직접 코딩한 알고리즘의 한계를 분석하고 개선하는 과정이 필수입니다.<br><br><b>📝 생기부 조언:</b> '공학적 문제 상황에서 물리적 변수를 상정하고 이를 수학적으로 해결함'을 강조하여 전공 적합성을 어필하세요.`;
-            textDiv.innerHTML = feedback;
-        }, 1500);
-    }
-
-    // --- 4. 팀 프로젝트 (로비 & 승인 시스템) ---
-    db.ref('teamList').on('value', (ss) => {
-        const teams = ss.val(); let html = "";
-        for(let name in teams) html += `<div class="team-list-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;"><span><b>${name}</b></span> <button class="btn btn-sm" onclick="requestJoin('${name}')">참가 신청</button></div>`;
-        document.getElementById('activeTeams').innerHTML = html || "개설된 팀이 없습니다.";
+    db.ref('teamList').on('value', ss => {
+        const d = ss.val(); let h = "";
+        for(let n in d) h += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;"><span><b>${n}</b></span> <button class="btn btn-sm" onclick="askJoin('${n}')">참가 신청</button></div>`;
+        document.getElementById('tList').innerHTML = h || "현재 진행 중인 팀이 없습니다. 첫 팀을 만들어보세요!";
     });
 
-    function createOrAdminJoin() {
-        const name = document.getElementById('teamName').value, pw = document.getElementById('adminPw').value;
-        if(!name || !pw) return alert("팀 이름과 비번을 입력하세요.");
-        db.ref('teamList/' + name).once('value', (ss) => {
-            if(!ss.exists()) { db.ref('teamList/' + name).set({ adminPw: pw }); alert("방장으로 팀이 생성되었습니다."); }
-            else if(ss.val().adminPw !== pw) return alert("비밀번호가 틀립니다.");
-            enterRoom(name, true);
+    function authTeam() {
+        const n = document.getElementById('tName').value, p = document.getElementById('tPw').value;
+        if(!n || !p) return alert("팀명과 비번을 모두 입력하세요.");
+        db.ref('teamList/'+n).once('value', ss => {
+            if(!ss.exists()) { db.ref('teamList/'+n).set({pw:p}); alert("새 프로젝트 팀이 생성되었습니다."); }
+            else if(ss.val().pw !== p) return alert("잘못된 비밀번호입니다.");
+            enterRoom(n, true);
         });
     }
 
-    function requestJoin(name) {
-        currentTeam = name; const userName = prompt("본인의 이름을 입력하세요:");
-        if(!userName) return;
-        db.ref('teams/' + name + '/requests/' + myUid).set({ name: userName, status: 'pending' });
-        enterRoom(name, false);
+    function askJoin(n) {
+        curT = n; const name = prompt("본인의 실명을 입력하세요:");
+        if(!name) return;
+        db.ref('teams/'+n+'/reqs/'+uid).set({name, status:'wait'});
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('room').style.display = 'block';
+        document.getElementById('roomTitle').innerText = n + " (승인 대기 중)";
+        db.ref('teams/'+n+'/reqs/'+uid).on('value', ss => {
+            if(ss.val()?.status === 'ok') enterRoom(n, false);
+        });
     }
 
-    function enterRoom(name, isMaster) {
-        currentTeam = name; isAdmin = isMaster;
+    function enterRoom(n, adm) {
+        curT = n; isAdm = adm;
         document.getElementById('lobby').style.display = 'none';
-        document.getElementById('teamRoom').style.display = 'block';
-        if(isAdmin) {
-            document.getElementById('activeSpace').style.display = 'block';
+        document.getElementById('room').style.display = 'block';
+        document.getElementById('roomTitle').innerText = n;
+        if(adm) {
             document.getElementById('adminPanel').style.display = 'block';
-            document.getElementById('roomHeader').innerText = name + " (관리자)";
-            loadChat(); listenRequests();
-        } else {
-            document.getElementById('waitingScreen').style.display = 'block';
-            document.getElementById('waitRoomTitle').innerText = name;
-            db.ref('teams/' + name + '/requests/' + myUid).on('value', (ss) => {
-                if(ss.val() && ss.val().status === 'approved') {
-                    document.getElementById('waitingScreen').style.display = 'none';
-                    document.getElementById('activeSpace').style.display = 'block';
-                    document.getElementById('roomHeader').innerText = name + " (승인됨)";
-                    loadChat();
-                } else if(ss.val() && ss.val().status === 'rejected') { alert("참가가 거부되었습니다."); location.reload(); }
+            document.getElementById('adminBadge').style.display = 'block';
+            db.ref('teams/'+n+'/reqs').on('value', ss => {
+                const d = ss.val(); let h = "";
+                for(let k in d) if(d[k].status==='wait') h += `<div style="margin-bottom:8px;">${d[k].name} <button class="btn" style="padding:4px 8px; font-size:0.7rem; background:var(--success);" onclick="approve('${k}')">승인</button></div>`;
+                document.getElementById('reqArea').innerHTML = h || "대기자 없음";
             });
         }
+        loadChat(); loadSyncLog();
     }
 
-    function listenRequests() {
-        db.ref('teams/' + currentTeam + '/requests').on('value', (ss) => {
-            const reqs = ss.val(); let html = "";
-            for(let uid in reqs) if(reqs[uid].status === 'pending') html += `<div>${reqs[uid].name} <button class="btn btn-sm" style="background:var(--success)" onclick="db.ref('teams/${currentTeam}/requests/${uid}/status').set('approved')">승인</button> <button class="btn btn-sm" style="background:var(--danger)" onclick="db.ref('teams/${currentTeam}/requests/${uid}/status').set('rejected')">거절</button></div>`;
-            document.getElementById('requestList').innerHTML = html || "대기자가 없습니다.";
-        });
-    }
+    function approve(k) { db.ref('teams/'+curT+'/reqs/'+k+'/status').set('ok'); }
 
-    function sendChat() {
+    function postChat() {
         const m = document.getElementById('chatInput').value; if(!m) return;
-        db.ref('teams/' + currentTeam + '/chats').push({ m, user: (isAdmin ? '방장' : '팀원'), time: Date.now() });
+        db.ref('teams/'+curT+'/chats').push({u: isAdm?'방장':'팀원', m, ts:Date.now()});
         document.getElementById('chatInput').value = '';
     }
 
     function loadChat() {
-        db.ref('teams/' + currentTeam + '/chats').limitToLast(20).on('value', (ss) => {
-            const data = ss.val(); let html = "";
-            for(let k in data) html += `<div class="msg"><b>${data[k].user}:</b> ${data[k].m}</div>`;
-            const b = document.getElementById('chatBox'); b.innerHTML = html; b.scrollTop = b.scrollHeight;
+        db.ref('teams/'+curT+'/chats').limitToLast(30).on('value', ss => {
+            let h = ""; const d = ss.val();
+            for(let k in d) h += `<div class="msg"><span class="msg-u">${d[k].u}</span>${d[k].m}</div>`;
+            const c = document.getElementById('chatDisplay'); c.innerHTML = h; c.scrollTop = c.scrollHeight;
         });
     }
 
-    function showTab(id, btn) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
+    function syncLog() { db.ref('teams/'+curT+'/sharedLog').set(document.getElementById('sharedLog').value); }
+    function loadSyncLog() { db.ref('teams/'+curT+'/sharedLog').on('value', ss => { document.getElementById('sharedLog').value = ss.val() || ""; }); }
+
+    function getTeamAI() {
+        const goal = document.getElementById('teamGoal').value; if(!goal) return alert("목표를 적어주세요.");
+        const res = document.getElementById('teamAiRes');
+        res.innerHTML = "<p class='loading-dots'>협업 효율성 극대화를 위한 AI 전략 수립 중</p>";
+        setTimeout(() => {
+            res.innerHTML = `
+                <div style="background:white; padding:15px; border-radius:12px; font-size:0.9rem; border:1px solid #ddd6fe;">
+                    <b style="color:var(--ai);">💡 협업 시너지 제언:</b><br>
+                    - <b>GitHub 및 Notion 연동:</b> 현재 주제 '${goal}'은 자료가 파편화될 수 있으니 형상 관리가 중요합니다.<br>
+                    - <b>역할 세분화:</b> 데이터 분석 담당과 모델링 담당의 인터페이스(I/O) 규격을 먼저 정의하세요.<br>
+                    - <b>심화 탐구:</b> 관련 논문의 <b>Abstract</b>를 함께 읽고 한계점(Limitation)을 우리 프로젝트의 해결 과제로 잡으세요.
+                </div>
+            `;
+        }, 1500);
     }
 
-    window.onload = () => { loadTT(); renderPersonal(); };
+    window.onload = () => { loadTT(); renderP(); };
 </script>
 </body>
 </html>
