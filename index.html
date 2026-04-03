@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v9.5</title>
+    <title>DSHS AI Master v10.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -11,55 +11,55 @@
     
     <style>
         :root { 
-            --primary: #0056b3; --primary-light: #e6f0ff;
-            --ai-purple: #7c3aed; --ai-bg: #f5f3ff;
-            --bg: #f1f5f9; --card: #ffffff;
-            --text: #1e293b; --text-light: #64748b;
-            --danger: #ef4444; --success: #10b981;
+            --primary: #0056b3; --ai-purple: #7c3aed; --ai-bg: #f8faff;
+            --bg: #f1f5f9; --card: #ffffff; --text: #1e293b;
         }
 
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; color: var(--text); line-height: 1.6; }
-        nav { background: var(--primary); display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; padding: 5px 10px; }
-        .nav-btn { background: none; border: none; color: white; padding: 12px 18px; cursor: pointer; font-size: 0.9rem; font-weight: 600; white-space: nowrap; opacity: 0.6; transition: 0.3s; }
-        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.2); border-radius: 10px; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
+        
+        /* 네비게이션 */
+        nav { background: var(--primary); display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; padding: 5px; }
+        .nav-btn { background: none; border: none; color: white; padding: 12px 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; opacity: 0.6; }
+        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.15); border-radius: 8px; }
 
-        .container { max-width: 850px; margin: 15px auto; padding: 0 15px 80px; }
-        .content-section { display: none; animation: fadeIn 0.4s ease; }
+        .container { max-width: 900px; margin: 15px auto; padding: 0 12px 100px; }
+        .content-section { display: none; animation: fadeIn 0.3s ease; }
         .content-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        .card { background: var(--card); border-radius: 18px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        
+        /* 탐구 워크스페이스 전용 UI */
+        .workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 850px) { .workspace-grid { grid-template-columns: 1fr; } }
 
-        /* 입력창 스타일 */
-        label { font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-top: 10px; display: block; }
-        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 5px; font-size: 0.95rem; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 700; width: 100%; transition: 0.2s; margin-top: 15px; }
-        .btn-ai { background: var(--ai-purple); }
-        .btn:active { transform: scale(0.98); }
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        label { font-size: 0.8rem; font-weight: 800; color: var(--primary); margin-bottom: -5px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 0.9rem; box-sizing: border-box; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--ai-purple); outline: none; box-shadow: 0 0 0 3px #ddd6fe; }
 
-        /* 탐구 기록 리스트 스타일 */
-        .research-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; margin-top: 15px; transition: 0.3s; cursor: pointer; }
-        .research-item:hover { border-color: var(--ai-purple); box-shadow: 0 5px 15px rgba(124, 58, 237, 0.1); }
-        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; }
-        .badge-planning { background: #e0f2fe; color: #0369a1; }
-        .badge-testing { background: #fef3c7; color: #92400e; }
-        .badge-finishing { background: #dcfce7; color: #166534; }
+        /* 실시간 AI 피드백창 */
+        .ai-feedback-panel { 
+            background: var(--ai-bg); border: 2px solid #ddd6fe; border-radius: 18px; padding: 20px; 
+            position: sticky; top: 70px; height: fit-content;
+        }
+        .ai-header { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--ai-purple); margin-bottom: 12px; font-size: 1rem; }
+        .ai-content { font-size: 0.9rem; line-height: 1.6; color: #475569; }
+        .highlight-box { background: white; padding: 12px; border-radius: 10px; border-left: 4px solid var(--ai-purple); margin-top: 15px; font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
 
         /* 시간표 및 기타 */
-        .tt-wrapper { overflow-x: auto; border-radius: 15px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; }
-        th, td { border: 1px solid #f1f5f9; padding: 8px 4px; text-align: center; }
-        .tt-s { width: 95%; height: 35px; border: none; background: #f1f5f9; font-size: 0.75rem; border-radius: 6px; text-align: center; font-weight: 600; }
-        .box { background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 10px; }
-        .msg { background: white; padding: 10px; border-radius: 10px; margin-bottom: 5px; border: 1px solid #eee; font-size: 0.85rem; }
+        .tt-wrapper { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th, td { border: 1px solid #f1f5f9; padding: 6px; text-align: center; font-size: 0.8rem; }
+        .tt-s { width: 95%; height: 32px; border: none; background: #f1f5f9; border-radius: 6px; text-align: center; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <nav>
     <button class="nav-btn active" onclick="showTab('home', this)">🏠 홈</button>
-    <button class="nav-btn" onclick="showTab('research', this)">🧪 탐구워크스페이스</button>
+    <button class="nav-btn" onclick="showTab('research', this)">🧪 실시간 탐구설계</button>
     <button class="nav-btn" onclick="showTab('calendar-sec', this)">📅 달력</button>
     <button class="nav-btn" onclick="showTab('team', this)">👥 팀플</button>
     <button class="nav-btn" onclick="showTab('grade', this)">📈 성적</button>
@@ -68,66 +68,61 @@
 <div class="container">
     <section id="home" class="content-section active">
         <div class="card">
-            <h3>📅 주간 시간표</h3>
+            <h3 style="margin:0 0 15px 0;">📅 My Schedule</h3>
             <div class="tt-wrapper"><table id="mainTT"></table></div>
         </div>
         <div class="card">
-            <h3>🔔 To-Do & D-Day</h3>
-            <div style="display:flex; gap:8px;"><input type="text" id="todoIn" placeholder="과제/수행평가 입력..."><button class="btn" style="width:70px; margin-top:5px;" onclick="addTodo()">추가</button></div>
-            <div id="todoList" class="box" style="max-height:150px; overflow-y:auto;"></div>
-            <div id="quickDday" class="box" style="font-weight:bold; color:var(--primary);"></div>
+            <h3 style="margin:0 0 15px 0;">🔔 To-Do & D-Day</h3>
+            <div style="display:flex; gap:5px;"><input type="text" id="todoIn" placeholder="할 일..."><button class="btn" style="width:60px; margin:0;" onclick="addTodo()">+</button></div>
+            <div id="todoList" style="margin-top:10px;"></div>
         </div>
     </section>
 
     <section id="research" class="content-section">
-        <div class="card" id="researchInputArea">
-            <h3 style="color:var(--ai-purple);">🧪 신규 탐구 설계</h3>
-            <input type="text" id="rq_subject" placeholder="탐구 주제 (예: 비행기의 날개 형상과 양력의 관계)">
-            <input type="text" id="rq_category" placeholder="교과 항목 (예: 물리II)">
-            <textarea id="rq_content" style="height:80px;" placeholder="실험 내용 및 데이터 기술..."></textarea>
-            <input type="text" id="rq_plan" placeholder="추후 심화 계획">
-            <select id="rq_step">
-                <option value="planning">💡 기획 단계</option>
-                <option value="researching">📚 조사 및 실험 중</option>
-                <option value="finishing">📝 보고서 작성 및 마무리</option>
-            </select>
-            <button class="btn btn-ai" onclick="saveResearch()">🚀 탐구 등록 및 AI 피드백</button>
-        </div>
-
-        <div id="researchListArea">
-            <h3 style="margin-bottom:10px;">📂 나의 탐구 아카이브 (클릭하여 수정)</h3>
-            <div id="researchContainer"></div>
-        </div>
-    </section>
-
-    <section id="calendar-sec" class="content-section">
-        <div class="card"><h3>📅 일정 추가</h3><input type="text" id="eventTitle" placeholder="일정명"><input type="date" id="eventDate"><button class="btn" onclick="addEvent()">달력 저장</button></div>
-        <div class="card"><div id="calendar"></div></div>
-    </section>
-
-    <section id="team" class="content-section">
-        <div id="lobby">
-            <div class="card"><h3>👥 프로젝트 접속</h3><input type="text" id="tName" placeholder="방 이름"><input type="password" id="tPw" placeholder="비밀번호"><button class="btn" onclick="handleTeam()">접속</button></div>
-        </div>
-        <div id="room" style="display:none;">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 id="roomTitle"></h3><button class="btn" style="width:70px; background:#64748b; margin:0;" onclick="location.reload()">나가기</button></div>
-                <div class="box" id="chatBox" style="height:150px; overflow-y:auto; margin-top:10px;"></div>
-                <div style="display:flex; gap:5px; margin-top:8px;"><input type="text" id="chatIn" placeholder="메시지..." style="margin:0;"><button class="btn" style="width:60px; margin:0;" onclick="sendChat()">전송</button></div>
+        <div class="workspace-grid">
+            <div class="card input-group">
+                <h3 style="color:var(--ai-purple); margin-bottom:10px;">✍️ 탐구 워크스페이스</h3>
+                
+                <label>📌 탐구 주제</label>
+                <input type="text" id="rq_subject" oninput="liveAnalyze()" placeholder="예: 소음 상쇄 알고리즘을 통한 교실 정숙 유지 시스템">
+                
+                <label>📖 교과 연계 및 핵심 키워드</label>
+                <input type="text" id="rq_category" oninput="liveAnalyze()" placeholder="예: 정보, 물리, 미적분">
+                
+                <label>🔍 탐구 내용 및 방법</label>
+                <textarea id="rq_content" oninput="liveAnalyze()" style="height:150px;" placeholder="실험 데이터 수집 방법, 사용한 물리 공식이나 프로그래밍 언어 등을 자유롭게 적어보세요."></textarea>
+                
+                <label>🚀 추후 심화 탐구 계획</label>
+                <input type="text" id="rq_plan" oninput="liveAnalyze()" placeholder="이 탐구 이후에 어떤 방향으로 확장하고 싶나요?">
+                
+                <label>📊 현재 진행 상황</label>
+                <select id="rq_step" onchange="liveAnalyze()">
+                    <option value="아이디어">💡 아이디어 구상 및 배경 조사</option>
+                    <option value="실험중">🛠️ 실험 설계 및 데이터 수집</option>
+                    <option value="마무리">📝 결과 도출 및 보고서 완성</option>
+                </select>
+                <button class="btn" onclick="archiveResearch()" style="background:var(--ai-purple);">📂 아카이브에 저장</button>
             </div>
-            <div class="card"><label>📂 공동 로그</label><textarea id="teamLog" style="height:180px;" onkeyup="syncLog()"></textarea></div>
+
+            <div class="ai-feedback-panel">
+                <div class="ai-header"><span>🤖</span> 고도화된 실시간 분석</div>
+                <div id="ai_status" style="font-size: 0.8rem; color: var(--ai-purple); margin-bottom: 10px;">입력을 시작하면 AI가 분석을 시작합니다...</div>
+                <div class="ai-content" id="ai_analysis">
+                    주제와 내용을 입력하시면 공학적 타당성과 심화 방향을 추천해 드립니다.
+                </div>
+                <div id="ai_recommendation" class="highlight-box" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top:20px;">
+            <h3>📂 저장된 탐구 목록</h3>
+            <div id="archive_list"></div>
         </div>
     </section>
 
-    <section id="grade" class="content-section">
-        <div class="card">
-            <h3>📈 성적 관리</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><select id="gType"><option value="내신">내신</option><option value="모의">모의고사</option></select><input type="text" id="subN" placeholder="과목명"></div>
-            <input type="number" id="subS" placeholder="점수/등급">
-            <button class="btn" onclick="saveGrade()">기록하기</button>
-            <div id="gradeArea" class="box"></div>
-        </div>
-    </section>
+    <section id="calendar-sec" class="content-section"><div class="card"><h3>📅 일정</h3><div id="calendar"></div></div></section>
+    <section id="team" class="content-section"><div class="card"><h3>👥 팀플</h3><div id="chatBox"></div></div></section>
+    <section id="grade" class="content-section"><div class="card"><h3>📈 성적</h3><div id="gradeArea"></div></div></section>
 </div>
 
 <script>
@@ -137,123 +132,102 @@
     let calendar;
 
     function showTab(id, b) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
         document.getElementById(id).classList.add('active'); b.classList.add('active');
         if(id === 'calendar-sec') setTimeout(() => { calendar.render(); calendar.updateSize(); }, 50);
     }
 
-    // --- 탐구 워크스페이스 실시간 시스템 ---
-    function saveResearch() {
-        const data = {
-            subject: document.getElementById('rq_subject').value,
-            category: document.getElementById('rq_category').value,
-            content: document.getElementById('rq_content').value,
-            plan: document.getElementById('rq_plan').value,
-            step: document.getElementById('rq_step').value,
-            time: Date.now()
-        };
-        if(!data.subject) return alert("주제를 입력하세요!");
+    // --- 고도화된 실시간 AI 분석 로직 ---
+    function liveAnalyze() {
+        const sub = document.getElementById('rq_subject').value;
+        const cat = document.getElementById('rq_category').value;
+        const cont = document.getElementById('rq_content').value;
+        const plan = document.getElementById('rq_plan').value;
         
-        // 로컬스토리지에 리스트로 저장 (v95)
-        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
-        list.unshift(data);
-        localStorage.setItem('res_v95', JSON.stringify(list));
-        
-        // 입력창 초기화 및 리스트 갱신
-        document.getElementById('rq_subject').value = '';
-        document.getElementById('rq_content').value = '';
-        renderResearch();
-    }
+        const status = document.getElementById('ai_status');
+        const analysis = document.getElementById('ai_analysis');
+        const rec = document.getElementById('ai_recommendation');
 
-    function renderResearch() {
-        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
-        const container = document.getElementById('researchContainer');
-        container.innerHTML = list.map((item, i) => {
-            const feedback = generateAIFeedback(item);
-            return `
-                <div class="research-item" onclick="editResearch(${i})">
-                    <span class="status-badge badge-${item.step}">${item.step.toUpperCase()}</span>
-                    <h4 style="margin:5px 0;">${item.subject} <small style="color:#94a3b8;">(${item.category})</small></h4>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">${item.content.substring(0, 50)}...</p>
-                    <div class="box" style="background:var(--ai-bg); border-color:var(--ai-purple); border-left:4px solid var(--ai-purple);">
-                        <div style="font-size:0.8rem; font-weight:bold; color:var(--ai-purple); margin-bottom:5px;">🤖 실시간 AI 분석</div>
-                        <div style="font-size:0.8rem; line-height:1.4;">${feedback}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function editResearch(index) {
-        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
-        const item = list[index];
-        
-        // 수정 모드로 전환 (입력창에 데이터 복구)
-        document.getElementById('rq_subject').value = item.subject;
-        document.getElementById('rq_category').value = item.category;
-        document.getElementById('rq_content').value = item.content;
-        document.getElementById('rq_plan').value = item.plan;
-        document.getElementById('rq_step').value = item.step;
-        
-        // 기존 항목 삭제 후 다시 저장하게 유도 (수정 효과)
-        list.splice(index, 1);
-        localStorage.setItem('res_v95', JSON.stringify(list));
-        window.scrollTo({top: 0, behavior: 'smooth'});
-        renderResearch();
-    }
-
-    function generateAIFeedback(item) {
-        let advice = "";
-        const text = item.subject + item.content + item.plan;
-        
-        if (item.step === 'planning') advice = "현재 기획 단계이므로, '왜 이 탐구가 필요한지' 동기를 구체화하세요. ";
-        else if (item.step === 'researching') advice = "실험 중이시군요! 변인 통제 데이터를 정량적(표/그래프)으로 기록하는 것이 핵심입니다. ";
-        else advice = "마무리 단계입니다. 탐구 결과가 실생활이나 산업에 미칠 영향을 제언으로 추가하세요. ";
-
-        if (text.includes("물리") || text.includes("에너지") || text.includes("동력")) {
-            advice += "수식적 증명을 위해 'MKS 단위계'를 정확히 사용하고, 시뮬레이션 툴을 병행해보길 추천합니다.";
-        } else if (text.includes("AI") || text.includes("데이터") || text.includes("정보")) {
-            advice += "알고리즘의 한계점과 이를 극복하기 위한 '최적화 과정'을 생기부에 강조하면 좋습니다.";
-        } else {
-            advice += "관련 교과 개념을 심화 탐구와 연결하여 학업 역량을 보여주세요.";
+        if(sub.length < 5) {
+            status.innerText = "더 구체적인 주제를 입력해주세요...";
+            return;
         }
-        return advice;
+
+        status.innerText = "⚡ AI가 실시간으로 탐구 가치를 분석 중...";
+        
+        // 1. 주제 및 내용 분석
+        let feedback = `현재 <b>'${sub}'</b> 주제는 `;
+        let advice = "";
+
+        if(cont.length < 30) {
+            feedback += "흥미롭지만 탐구 내용이 부족합니다. 구체적인 실험 방법이나 데이터를 어떻게 수집할지 보완이 필요합니다.";
+        } else {
+            feedback += "공학적 타당성이 높습니다. 특히 입력하신 내용을 바탕으로 볼 때, ";
+            
+            if(sub.includes("알고리즘") || sub.includes("시스템") || sub.includes("AI")) {
+                feedback += "논리적 구조 설계 역량이 돋보입니다.";
+                advice = "<b>🛠️ 공학적 추천:</b> 단순 구현에 그치지 말고, 사용한 알고리즘의 '시간 복잡도'나 '데이터 처리 효율'을 수치화하세요. '${plan}' 단계에서 디지털 트윈 기술을 접목해 가상 시뮬레이션을 수행하면 생기부 등급이 올라갑니다.";
+            } else if(sub.includes("에너지") || sub.includes("역학") || sub.includes("물리")) {
+                feedback += "물리적 원리를 실생활에 적용하려는 시도가 훌륭합니다.";
+                advice = "<b>📐 물리 심화 추천:</b> 단순 관찰보다는 공식을 활용한 '예측값'과 실제 '실험값'의 오차율을 계산하세요. '${plan}' 시에는 해당 원리를 자동화 제어(PID 제어 등)와 연결하여 시스템화하는 탐구를 추천합니다.";
+            } else {
+                feedback += "자기주도적 탐구 역량이 잘 드러납니다.";
+                advice = `<b>💡 심화 제언:</b> '${cat}' 교과에서 배운 개념 중 가장 핵심적인 원리 하나를 선택해 본문에 더 명시하세요. 탐구 결과가 실생활의 문제를 어떻게 해결할 수 있는지 '사회적 기여도'를 추가하면 완벽합니다.`;
+            }
+        }
+
+        analysis.innerHTML = feedback;
+        if(advice) {
+            rec.style.display = "block";
+            rec.innerHTML = advice;
+        }
     }
 
-    // --- 시간표 및 나머지 기능 (v9 유지) ---
-    const subList = ["문학","대수","미적1","영1","물1","화1","생1","지1","로봇","AI","데이터","창공","진로","자율"];
+    function archiveResearch() {
+        const data = {
+            sub: document.getElementById('rq_subject').value,
+            cont: document.getElementById('rq_content').value,
+            time: new Date().toLocaleString()
+        };
+        if(!data.sub) return;
+        const list = JSON.parse(localStorage.getItem('res_v10') || '[]');
+        list.unshift(data);
+        localStorage.setItem('res_v10', JSON.stringify(list));
+        renderArchive();
+    }
+
+    function renderArchive() {
+        const list = JSON.parse(localStorage.getItem('res_v10') || '[]');
+        document.getElementById('archive_list').innerHTML = list.map(i => `
+            <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:8px; font-size:0.85rem;">
+                <b>${i.sub}</b> <span style="font-size:0.7rem; color:#64748b;">(${i.time})</span>
+            </div>
+        `).join('');
+    }
+
+    // --- 시간표 및 기타 기능 ---
+    const subs = ["문학","대수","미적1","영1","물1","화1","생1","지1","로봇","AI","데이터","창공","진로","자율"];
     function initTT() {
-        let h = `<tr><th style="width:14%">교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
+        let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
         for(let i=1; i<=7; i++){
             h += `<tr><td>${i}</td>`;
-            for(let j=0; j<5; j++) h += `<td><select class="tt-s" data-rc="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subList.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`;
+            for(let j=0; j<5; j++) h += `<td><select class="tt-s" data-rc="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subs.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`;
             h += `</tr>`;
         }
         document.getElementById('mainTT').innerHTML = h;
-        const d = JSON.parse(localStorage.getItem('tt_v95')||'{}');
+        const d = JSON.parse(localStorage.getItem('tt_v10')||'{}');
         document.querySelectorAll('.tt-s').forEach(s => { if(d[s.dataset.rc]) s.value = d[s.dataset.rc]; });
     }
-    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s => d[s.dataset.rc] = s.value); localStorage.setItem('tt_v95', JSON.stringify(d)); }
+    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s => d[s.dataset.rc] = s.value); localStorage.setItem('tt_v10', JSON.stringify(d)); }
 
-    function addTodo() { const v = document.getElementById('todoIn').value; if(!v) return; const l = JSON.parse(localStorage.getItem('todo_v95')||'[]'); l.push(v); localStorage.setItem('todo_v95', JSON.stringify(l)); document.getElementById('todoIn').value=''; renderTodo(); }
-    function renderTodo() { document.getElementById('todoList').innerHTML = JSON.parse(localStorage.getItem('todo_v95')||'[]').map((t,i)=>`<div class="msg" onclick="delTodo(${i})">✅ ${t}</div>`).join(''); }
-    function delTodo(i) { const l = JSON.parse(localStorage.getItem('todo_v95')||'[]'); l.splice(i,1); localStorage.setItem('todo_v95', JSON.stringify(l)); renderTodo(); }
-
-    function addEvent() { const t=document.getElementById('eventTitle').value, d=document.getElementById('eventDate').value; if(!t||!d) return; const evs=JSON.parse(localStorage.getItem('ev_v95')||'[]'); const e={title:t, start:d, allDay:true, color:'#0056b3'}; evs.push(e); localStorage.setItem('ev_v95', JSON.stringify(evs)); calendar.addEvent(e); renderDday(); }
-    function renderDday() { const evs=JSON.parse(localStorage.getItem('ev_v95')||'[]'); const now=new Date(); document.getElementById('quickDday').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e=>{ const diff=Math.ceil((new Date(e.start)-now)/(1000*60*60*24)); return `D${diff===0?'-Day':(diff>0?'-'+diff:'+'+Math.abs(diff))} | ${e.title}`; }).slice(0,1).join('') || "다가오는 일정 없음"; }
-
-    let curT = "";
-    function handleTeam() { const n=document.getElementById('tName').value, p=document.getElementById('tPw').value; if(!n||!p) return; db.ref('teamList/'+n).once('value', s => { if(!s.exists()) db.ref('teamList/'+n).set({pw:p}); else if(s.val().pw!==p) return alert("비번오류"); curT=n; document.getElementById('lobby').style.display='none'; document.getElementById('room').style.display='block'; document.getElementById('roomTitle').innerText=n; db.ref('teams/'+n+'/chat').on('value', ss => { let h=""; ss.forEach(c=>h+=`<div class="msg"><b>익명:</b> ${c.val().m}</div>`); document.getElementById('chatBox').innerHTML=h; document.getElementById('chatBox').scrollTop=999; }); db.ref('teams/'+n+'/log').on('value', ss=>document.getElementById('teamLog').value=ss.val()||""); }); }
-    function sendChat() { const m=document.getElementById('chatIn').value; if(!m) return; db.ref('teams/'+curT+'/chat').push({m}); document.getElementById('chatIn').value=''; }
-    function syncLog() { db.ref('teams/'+curT+'/log').set(document.getElementById('teamLog').value); }
-
-    function saveGrade() { const gs=JSON.parse(localStorage.getItem('g_v95')||'[]'); gs.push({t:document.getElementById('gType').value, n:document.getElementById('subN').value, s:document.getElementById('subS').value}); localStorage.setItem('g_v95', JSON.stringify(gs)); renderGrades(); }
-    function renderGrades() { document.getElementById('gradeArea').innerHTML = JSON.parse(localStorage.getItem('g_v95')||'[]').reverse().map(g=>`<div class="msg"><b>[${g.t}]</b> ${g.n}: ${g.s}</div>`).join(''); }
+    function addTodo() { const v = document.getElementById('todoIn').value; if(!v) return; const l = JSON.parse(localStorage.getItem('todo_v10')||'[]'); l.push(v); localStorage.setItem('todo_v10', JSON.stringify(l)); document.getElementById('todoIn').value=''; renderTodo(); }
+    function renderTodo() { document.getElementById('todoList').innerHTML = JSON.parse(localStorage.getItem('todo_v10')||'[]').map((t,i)=>`<div style="background:white; padding:10px; border-radius:8px; border:1px solid #eee; margin-bottom:5px; font-size:0.85rem;" onclick="delTodo(${i})">✅ ${t}</div>`).join(''); }
+    function delTodo(i) { const l = JSON.parse(localStorage.getItem('todo_v10')||'[]'); l.splice(i,1); localStorage.setItem('todo_v10', JSON.stringify(l)); renderTodo(); }
 
     document.addEventListener('DOMContentLoaded', () => {
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'ko', events: JSON.parse(localStorage.getItem('ev_v95')||'[]') });
-        calendar.render(); initTT(); renderTodo(); renderDday(); renderGrades(); renderResearch();
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'ko', events: [] });
+        calendar.render(); initTT(); renderTodo(); renderArchive();
     });
 </script>
 </body>
