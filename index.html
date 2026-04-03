@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v9.0</title>
+    <title>DSHS AI Master v9.5</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -13,83 +13,53 @@
         :root { 
             --primary: #0056b3; --primary-light: #e6f0ff;
             --ai-purple: #7c3aed; --ai-bg: #f5f3ff;
-            --bg: #f8fafc; --card: #ffffff;
+            --bg: #f1f5f9; --card: #ffffff;
             --text: #1e293b; --text-light: #64748b;
             --danger: #ef4444; --success: #10b981;
         }
 
-        body { 
-            font-family: 'Pretendard', -apple-system, sans-serif; 
-            background: var(--bg); margin: 0; color: var(--text);
-            line-height: 1.6; -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; color: var(--text); line-height: 1.6; }
+        nav { background: var(--primary); display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; padding: 5px 10px; }
+        .nav-btn { background: none; border: none; color: white; padding: 12px 18px; cursor: pointer; font-size: 0.9rem; font-weight: 600; white-space: nowrap; opacity: 0.6; transition: 0.3s; }
+        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-        /* 내비게이션 바: 고급스러운 블러 처리 */
-        nav { 
-            background: rgba(0, 86, 179, 0.9); backdrop-filter: blur(10px);
-            display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000;
-            padding: 5px 10px; scrollbar-width: none;
-        }
-        nav::-webkit-scrollbar { display: none; }
-        .nav-btn { 
-            background: none; border: none; color: white; padding: 12px 18px;
-            cursor: pointer; font-size: 0.9rem; font-weight: 600; white-space: nowrap;
-            opacity: 0.6; transition: 0.3s; border-radius: 10px;
-        }
-        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.2); }
-
-        .container { max-width: 800px; margin: 15px auto; padding: 0 15px; padding-bottom: 50px; }
-        
-        /* 섹션 전환 애니메이션 */
-        .content-section { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .container { max-width: 850px; margin: 15px auto; padding: 0 15px 80px; }
+        .content-section { display: none; animation: fadeIn 0.4s ease; }
         .content-section.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 카드 디자인: 그림자 및 라운딩 강화 */
-        .card { 
-            background: var(--card); border-radius: 20px; padding: 20px; 
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); 
-            border: 1px solid rgba(226, 232, 240, 0.8); margin-bottom: 20px;
-        }
-        h3 { margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
 
-        /* 공통 입력창 스타일 */
-        label { font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 5px; display: block; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px;
-            margin-bottom: 12px; font-size: 0.95rem; box-sizing: border-box; background: #fcfcfd;
-            transition: 0.2s;
-        }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px var(--primary-light); }
-
-        .btn { 
-            background: var(--primary); color: white; border: none; padding: 14px; 
-            border-radius: 12px; cursor: pointer; font-weight: 700; width: 100%; 
-            font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        /* 입력창 스타일 */
+        label { font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-top: 10px; display: block; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 5px; font-size: 0.95rem; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 700; width: 100%; transition: 0.2s; margin-top: 15px; }
         .btn-ai { background: var(--ai-purple); }
-        .btn:active { transform: scale(0.97); }
+        .btn:active { transform: scale(0.98); }
 
-        /* 시간표 전용 CSS */
-        .tt-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; background: #fff; }
+        /* 탐구 기록 리스트 스타일 */
+        .research-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; margin-top: 15px; transition: 0.3s; cursor: pointer; }
+        .research-item:hover { border-color: var(--ai-purple); box-shadow: 0 5px 15px rgba(124, 58, 237, 0.1); }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; }
+        .badge-planning { background: #e0f2fe; color: #0369a1; }
+        .badge-testing { background: #fef3c7; color: #92400e; }
+        .badge-finishing { background: #dcfce7; color: #166534; }
+
+        /* 시간표 및 기타 */
+        .tt-wrapper { overflow-x: auto; border-radius: 15px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; }
         th, td { border: 1px solid #f1f5f9; padding: 8px 4px; text-align: center; }
-        th { background: #f8fafc; font-size: 0.8rem; color: var(--text-light); }
-        .tt-s { 
-            width: 95%; height: 38px; border: none; background: #f1f5f9; 
-            font-size: 0.75rem; text-align: center; border-radius: 8px; font-weight: 600;
-            appearance: none; cursor: pointer;
-        }
-
-        .box { background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; }
-        .msg { background: white; padding: 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .tt-s { width: 95%; height: 35px; border: none; background: #f1f5f9; font-size: 0.75rem; border-radius: 6px; text-align: center; font-weight: 600; }
+        .box { background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 10px; }
+        .msg { background: white; padding: 10px; border-radius: 10px; margin-bottom: 5px; border: 1px solid #eee; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<nav id="topNav">
+<nav>
     <button class="nav-btn active" onclick="showTab('home', this)">🏠 홈</button>
-    <button class="nav-btn" onclick="showTab('research', this)">🧪 탐구설계</button>
+    <button class="nav-btn" onclick="showTab('research', this)">🧪 탐구워크스페이스</button>
     <button class="nav-btn" onclick="showTab('calendar-sec', this)">📅 달력</button>
     <button class="nav-btn" onclick="showTab('team', this)">👥 팀플</button>
     <button class="nav-btn" onclick="showTab('grade', this)">📈 성적</button>
@@ -103,116 +73,155 @@
         </div>
         <div class="card">
             <h3>🔔 To-Do & D-Day</h3>
-            <div style="display:flex; gap:8px;"><input type="text" id="todoIn" placeholder="오늘의 과제..."><button class="btn" style="width:70px;" onclick="addTodo()">추가</button></div>
-            <div id="todoList" class="box" style="max-height:180px; overflow-y:auto; margin-bottom:10px;"></div>
-            <div id="quickDday" class="box" style="font-size:0.85rem; color:var(--primary); font-weight:600;"></div>
+            <div style="display:flex; gap:8px;"><input type="text" id="todoIn" placeholder="과제/수행평가 입력..."><button class="btn" style="width:70px; margin-top:5px;" onclick="addTodo()">추가</button></div>
+            <div id="todoList" class="box" style="max-height:150px; overflow-y:auto;"></div>
+            <div id="quickDday" class="box" style="font-weight:bold; color:var(--primary);"></div>
         </div>
     </section>
 
     <section id="research" class="content-section">
-        <div class="card">
-            <h3 style="color:var(--ai-purple);">🧪 AI 탐구 설계자 (Research Architect)</h3>
-            <div class="box" style="background: white;">
-                <label>1. 탐구 주제</label>
-                <input type="text" id="rq_subject" placeholder="예: 자율주행 알고리즘의 윤리적 가이드라인 연구">
-                
-                <label>2. 관련 항목 (교과/창체)</label>
-                <input type="text" id="rq_category" placeholder="예: 정보, 사회문화, 진로활동">
-                
-                <label>3. 탐구 핵심 내용</label>
-                <textarea id="rq_content" style="height:100px;" placeholder="실험 과정, 사용한 수식, 핵심 코딩 로직 등을 적어주세요."></textarea>
-                
-                <label>4. 향후 심화 탐구 계획</label>
-                <input type="text" id="rq_plan" placeholder="이 탐구 이후에 더 알아보고 싶은 점">
-                
-                <label>5. 탐구 진행 단계</label>
-                <select id="rq_step">
-                    <option value="planning">💡 아이디어 기획 중</option>
-                    <option value="researching">📚 자료 조사/이론 정립</option>
-                    <option value="testing">🛠️ 실험 및 데이터 수집 중</option>
-                    <option value="finishing">📝 결과 정리 및 보고서 작성</option>
-                </select>
-            </div>
-            <button class="btn btn-ai" style="margin-top:15px;" onclick="analyzeResearch()">🚀 AI 심화 분석 실행</button>
-            
-            <div id="researchFeedback" class="box" style="display:none; margin-top:20px; background:var(--ai-bg); border-color:#ddd;">
-                <div id="fbHeader" style="font-weight:bold; color:var(--ai-purple); margin-bottom:10px;"></div>
-                <div id="fbBody" style="font-size:0.9rem;"></div>
-            </div>
+        <div class="card" id="researchInputArea">
+            <h3 style="color:var(--ai-purple);">🧪 신규 탐구 설계</h3>
+            <input type="text" id="rq_subject" placeholder="탐구 주제 (예: 비행기의 날개 형상과 양력의 관계)">
+            <input type="text" id="rq_category" placeholder="교과 항목 (예: 물리II)">
+            <textarea id="rq_content" style="height:80px;" placeholder="실험 내용 및 데이터 기술..."></textarea>
+            <input type="text" id="rq_plan" placeholder="추후 심화 계획">
+            <select id="rq_step">
+                <option value="planning">💡 기획 단계</option>
+                <option value="researching">📚 조사 및 실험 중</option>
+                <option value="finishing">📝 보고서 작성 및 마무리</option>
+            </select>
+            <button class="btn btn-ai" onclick="saveResearch()">🚀 탐구 등록 및 AI 피드백</button>
+        </div>
+
+        <div id="researchListArea">
+            <h3 style="margin-bottom:10px;">📂 나의 탐구 아카이브 (클릭하여 수정)</h3>
+            <div id="researchContainer"></div>
         </div>
     </section>
 
     <section id="calendar-sec" class="content-section">
-        <div class="card">
-            <h3>📅 일정 추가</h3>
-            <input type="text" id="eventTitle" placeholder="일정 제목">
-            <input type="date" id="eventDate">
-            <button class="btn" onclick="addEvent()">달력에 저장</button>
-        </div>
+        <div class="card"><h3>📅 일정 추가</h3><input type="text" id="eventTitle" placeholder="일정명"><input type="date" id="eventDate"><button class="btn" onclick="addEvent()">달력 저장</button></div>
         <div class="card"><div id="calendar"></div></div>
     </section>
 
     <section id="team" class="content-section">
         <div id="lobby">
-            <div class="card">
-                <h3>👥 프로젝트 룸 접속</h3>
-                <input type="text" id="tName" placeholder="방 이름"><input type="password" id="tPw" placeholder="비밀번호">
-                <button class="btn" onclick="handleTeam()">접속 / 생성</button>
-            </div>
+            <div class="card"><h3>👥 프로젝트 접속</h3><input type="text" id="tName" placeholder="방 이름"><input type="password" id="tPw" placeholder="비밀번호"><button class="btn" onclick="handleTeam()">접속</button></div>
         </div>
         <div id="room" style="display:none;">
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 id="roomTitle" style="margin:0;"></h3>
-                    <button class="btn btn-danger" style="width:60px; padding:8px;" onclick="location.reload()">나가기</button>
-                </div>
-                <div class="box" id="chatBox" style="height:200px; overflow-y:auto; margin-top:15px;"></div>
-                <div style="display:flex; gap:5px; margin-top:10px;">
-                    <input type="text" id="chatIn" placeholder="메시지..." style="margin:0;">
-                    <button class="btn" style="width:60px;" onclick="sendChat()">전송</button>
-                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 id="roomTitle"></h3><button class="btn" style="width:70px; background:#64748b; margin:0;" onclick="location.reload()">나가기</button></div>
+                <div class="box" id="chatBox" style="height:150px; overflow-y:auto; margin-top:10px;"></div>
+                <div style="display:flex; gap:5px; margin-top:8px;"><input type="text" id="chatIn" placeholder="메시지..." style="margin:0;"><button class="btn" style="width:60px; margin:0;" onclick="sendChat()">전송</button></div>
             </div>
-            <div class="card">
-                <label>📂 팀 공동 작업 로그 (자동 저장)</label>
-                <textarea id="teamLog" style="height:200px; margin:0;" onkeyup="syncLog()"></textarea>
-            </div>
+            <div class="card"><label>📂 공동 로그</label><textarea id="teamLog" style="height:180px;" onkeyup="syncLog()"></textarea></div>
         </div>
     </section>
 
     <section id="grade" class="content-section">
         <div class="card">
-            <h3>📈 성적 히스토리</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <select id="gType" onchange="toggleG()"><option value="s">내신</option><option value="m">모의고사</option></select>
-                <input type="text" id="subN" placeholder="과목명">
-            </div>
-            <div id="sInput">
-                <div style="display:flex; gap:5px;"><select id="sY"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select><select id="sE"><option value="중간">중간</option><option value="기말">기말</option></select></div>
-            </div>
+            <h3>📈 성적 관리</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><select id="gType"><option value="내신">내신</option><option value="모의">모의고사</option></select><input type="text" id="subN" placeholder="과목명"></div>
             <input type="number" id="subS" placeholder="점수/등급">
-            <button class="btn" onclick="saveGrade()">기록 저장</button>
-            <div id="gradeList" class="box" style="margin-top:15px;"></div>
+            <button class="btn" onclick="saveGrade()">기록하기</button>
+            <div id="gradeArea" class="box"></div>
         </div>
     </section>
 </div>
 
 <script>
-    // Firebase 초기화
     const firebaseConfig = { databaseURL: "https://dshs-app-5af42-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let calendar;
 
-    // 1. 네비게이션 시스템
-    function showTab(id, btn) {
+    function showTab(id, b) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(id).classList.add('active'); b.classList.add('active');
         if(id === 'calendar-sec') setTimeout(() => { calendar.render(); calendar.updateSize(); }, 50);
     }
 
-    // 2. 시간표 로직
+    // --- 탐구 워크스페이스 실시간 시스템 ---
+    function saveResearch() {
+        const data = {
+            subject: document.getElementById('rq_subject').value,
+            category: document.getElementById('rq_category').value,
+            content: document.getElementById('rq_content').value,
+            plan: document.getElementById('rq_plan').value,
+            step: document.getElementById('rq_step').value,
+            time: Date.now()
+        };
+        if(!data.subject) return alert("주제를 입력하세요!");
+        
+        // 로컬스토리지에 리스트로 저장 (v95)
+        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
+        list.unshift(data);
+        localStorage.setItem('res_v95', JSON.stringify(list));
+        
+        // 입력창 초기화 및 리스트 갱신
+        document.getElementById('rq_subject').value = '';
+        document.getElementById('rq_content').value = '';
+        renderResearch();
+    }
+
+    function renderResearch() {
+        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
+        const container = document.getElementById('researchContainer');
+        container.innerHTML = list.map((item, i) => {
+            const feedback = generateAIFeedback(item);
+            return `
+                <div class="research-item" onclick="editResearch(${i})">
+                    <span class="status-badge badge-${item.step}">${item.step.toUpperCase()}</span>
+                    <h4 style="margin:5px 0;">${item.subject} <small style="color:#94a3b8;">(${item.category})</small></h4>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">${item.content.substring(0, 50)}...</p>
+                    <div class="box" style="background:var(--ai-bg); border-color:var(--ai-purple); border-left:4px solid var(--ai-purple);">
+                        <div style="font-size:0.8rem; font-weight:bold; color:var(--ai-purple); margin-bottom:5px;">🤖 실시간 AI 분석</div>
+                        <div style="font-size:0.8rem; line-height:1.4;">${feedback}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function editResearch(index) {
+        const list = JSON.parse(localStorage.getItem('res_v95') || '[]');
+        const item = list[index];
+        
+        // 수정 모드로 전환 (입력창에 데이터 복구)
+        document.getElementById('rq_subject').value = item.subject;
+        document.getElementById('rq_category').value = item.category;
+        document.getElementById('rq_content').value = item.content;
+        document.getElementById('rq_plan').value = item.plan;
+        document.getElementById('rq_step').value = item.step;
+        
+        // 기존 항목 삭제 후 다시 저장하게 유도 (수정 효과)
+        list.splice(index, 1);
+        localStorage.setItem('res_v95', JSON.stringify(list));
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        renderResearch();
+    }
+
+    function generateAIFeedback(item) {
+        let advice = "";
+        const text = item.subject + item.content + item.plan;
+        
+        if (item.step === 'planning') advice = "현재 기획 단계이므로, '왜 이 탐구가 필요한지' 동기를 구체화하세요. ";
+        else if (item.step === 'researching') advice = "실험 중이시군요! 변인 통제 데이터를 정량적(표/그래프)으로 기록하는 것이 핵심입니다. ";
+        else advice = "마무리 단계입니다. 탐구 결과가 실생활이나 산업에 미칠 영향을 제언으로 추가하세요. ";
+
+        if (text.includes("물리") || text.includes("에너지") || text.includes("동력")) {
+            advice += "수식적 증명을 위해 'MKS 단위계'를 정확히 사용하고, 시뮬레이션 툴을 병행해보길 추천합니다.";
+        } else if (text.includes("AI") || text.includes("데이터") || text.includes("정보")) {
+            advice += "알고리즘의 한계점과 이를 극복하기 위한 '최적화 과정'을 생기부에 강조하면 좋습니다.";
+        } else {
+            advice += "관련 교과 개념을 심화 탐구와 연결하여 학업 역량을 보여주세요.";
+        }
+        return advice;
+    }
+
+    // --- 시간표 및 나머지 기능 (v9 유지) ---
     const subList = ["문학","대수","미적1","영1","물1","화1","생1","지1","로봇","AI","데이터","창공","진로","자율"];
     function initTT() {
         let h = `<tr><th style="width:14%">교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
@@ -222,101 +231,29 @@
             h += `</tr>`;
         }
         document.getElementById('mainTT').innerHTML = h;
-        const d = JSON.parse(localStorage.getItem('tt_v9')||'{}');
+        const d = JSON.parse(localStorage.getItem('tt_v95')||'{}');
         document.querySelectorAll('.tt-s').forEach(s => { if(d[s.dataset.rc]) s.value = d[s.dataset.rc]; });
     }
-    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s => d[s.dataset.rc] = s.value); localStorage.setItem('tt_v9', JSON.stringify(d)); }
+    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s => d[s.dataset.rc] = s.value); localStorage.setItem('tt_v95', JSON.stringify(d)); }
 
-    // 3. AI 탐구 설계 분석 (v9 핵심)
-    function analyzeResearch() {
-        const sub = document.getElementById('rq_subject').value;
-        const cont = document.getElementById('rq_content').value;
-        const plan = document.getElementById('rq_plan').value;
-        const step = document.getElementById('rq_step').value;
+    function addTodo() { const v = document.getElementById('todoIn').value; if(!v) return; const l = JSON.parse(localStorage.getItem('todo_v95')||'[]'); l.push(v); localStorage.setItem('todo_v95', JSON.stringify(l)); document.getElementById('todoIn').value=''; renderTodo(); }
+    function renderTodo() { document.getElementById('todoList').innerHTML = JSON.parse(localStorage.getItem('todo_v95')||'[]').map((t,i)=>`<div class="msg" onclick="delTodo(${i})">✅ ${t}</div>`).join(''); }
+    function delTodo(i) { const l = JSON.parse(localStorage.getItem('todo_v95')||'[]'); l.splice(i,1); localStorage.setItem('todo_v95', JSON.stringify(l)); renderTodo(); }
 
-        if(!sub || !cont) return alert("주제와 내용을 입력해주세요!");
+    function addEvent() { const t=document.getElementById('eventTitle').value, d=document.getElementById('eventDate').value; if(!t||!d) return; const evs=JSON.parse(localStorage.getItem('ev_v95')||'[]'); const e={title:t, start:d, allDay:true, color:'#0056b3'}; evs.push(e); localStorage.setItem('ev_v95', JSON.stringify(evs)); calendar.addEvent(e); renderDday(); }
+    function renderDday() { const evs=JSON.parse(localStorage.getItem('ev_v95')||'[]'); const now=new Date(); document.getElementById('quickDday').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e=>{ const diff=Math.ceil((new Date(e.start)-now)/(1000*60*60*24)); return `D${diff===0?'-Day':(diff>0?'-'+diff:'+'+Math.abs(diff))} | ${e.title}`; }).slice(0,1).join('') || "다가오는 일정 없음"; }
 
-        const fb = document.getElementById('researchFeedback');
-        const head = document.getElementById('fbHeader');
-        const body = document.getElementById('fbBody');
-        
-        fb.style.display = 'block';
-        head.innerHTML = "⏳ 데이터 분석 및 심화 제언 생성 중...";
-        body.innerHTML = "";
-
-        setTimeout(() => {
-            head.innerHTML = `✅ '${sub}' 탐구에 대한 AI 가이드`;
-            const steps = {
-                planning: "아이디어 단계이므로 탐구의 '필요성'을 기술적 배경과 함께 정리하는 것이 중요합니다.",
-                researching: "관련 선행 연구를 조사할 때, 기술의 한계점을 명확히 분석하여 본인의 독창성을 확보하세요.",
-                testing: "실험 변인 통제와 데이터 오차 분석(Error Analysis)을 통해 결과의 신뢰도를 높이세요.",
-                finishing: "결론을 내릴 때 본인이 계획한 '${plan}'과 연결하여 발전 가능성을 서술하세요."
-            };
-
-            let advice = "<b>💡 공학적 심화 제언:</b> ";
-            if(cont.includes("로켓") || cont.includes("에너지")) advice += "열역학적 효율 분석에 수치적 시뮬레이션(Python/MATLAB)을 더해 정량적 근거를 보강하면 매우 우수한 생기부 기록이 됩니다.";
-            else if(cont.includes("AI") || cont.includes("코드")) advice += "알고리즘의 성능 지표(Accuracy, F1-score 등)를 제시하고, 왜 이 모델을 선택했는지 논리적 근거를 강화하세요.";
-            else advice += "이론을 실제 현상에 적용하는 과정이 돋보입니다. 실험 장치 설계 단계에서 공학적 도구(CAD, 3D 프린팅 등) 활용 경험을 강조해 보세요.";
-
-            body.innerHTML = `<p>${steps[step]}</p><p>${advice}</p><div class="msg" style="border-left:4px solid var(--ai-purple); background:#fff;"><b>📝 생기부 추천 문구:</b><br>"${sub}" 주제의 탐구를 통해 자기주도적 문제 해결 능력을 보임. 특히 탐구 과정에서 ${plan}의 필요성을 느끼고 심화 학습을 계획하는 학술적 태도가 돋보임.</div>`;
-        }, 1200);
-    }
-
-    // 4. 할일 & 달력
-    function addTodo() { const v = document.getElementById('todoIn').value; if(!v) return; const l = JSON.parse(localStorage.getItem('todo_v9')||'[]'); l.push(v); localStorage.setItem('todo_v9', JSON.stringify(l)); document.getElementById('todoIn').value=''; renderTodo(); }
-    function renderTodo() { document.getElementById('todoList').innerHTML = JSON.parse(localStorage.getItem('todo_v9')||'[]').map((t,i)=>`<div class="msg" onclick="delTodo(${i})">✅ ${t}</div>`).join(''); }
-    function delTodo(i) { const l = JSON.parse(localStorage.getItem('todo_v9')||'[]'); l.splice(i,1); localStorage.setItem('todo_v9', JSON.stringify(l)); renderTodo(); }
-    
-    function addEvent() {
-        const t = document.getElementById('eventTitle').value, d = document.getElementById('eventDate').value;
-        if(!t || !d) return;
-        const evs = JSON.parse(localStorage.getItem('ev_v9')||'[]');
-        evs.push({title:t, start:d, allDay:true, color: '#0056b3'});
-        localStorage.setItem('ev_v9', JSON.stringify(evs));
-        calendar.addEvent(evs[evs.length-1]); renderDday();
-    }
-    function renderDday() {
-        const evs = JSON.parse(localStorage.getItem('ev_v9')||'[]');
-        const now = new Date();
-        document.getElementById('quickDday').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e=>{
-            const diff = Math.ceil((new Date(e.start)-now)/(1000*60*60*24));
-            return `D${diff===0?'-Day':(diff>0?'-'+diff:'+'+Math.abs(diff))} | ${e.title}`;
-        }).slice(0,2).join(' / ') || "일정 없음";
-    }
-
-    // 5. 팀 프로젝트 (Firebase)
     let curT = "";
-    function handleTeam() {
-        const n = document.getElementById('tName').value, p = document.getElementById('tPw').value;
-        if(!n||!p) return;
-        db.ref('teamList/'+n).once('value', ss => {
-            if(!ss.exists()) db.ref('teamList/'+n).set({pw:p});
-            else if(ss.val().pw !== p) return alert("비밀번호 불일치");
-            curT = n; document.getElementById('lobby').style.display='none'; document.getElementById('room').style.display='block';
-            document.getElementById('roomTitle').innerText = `🏠 ${n}`;
-            db.ref('teams/'+n+'/chat').on('value', s => {
-                let h = ""; s.forEach(c => h += `<div class="msg"><b>익명:</b> ${c.val().m}</div>`);
-                document.getElementById('chatBox').innerHTML = h; document.getElementById('chatBox').scrollTop = 9999;
-            });
-            db.ref('teams/'+n+'/log').on('value', s => document.getElementById('teamLog').value = s.val() || "");
-        });
-    }
-    function sendChat() { const m = document.getElementById('chatIn').value; if(!m) return; db.ref('teams/'+curT+'/chat').push({m}); document.getElementById('chatIn').value=''; }
+    function handleTeam() { const n=document.getElementById('tName').value, p=document.getElementById('tPw').value; if(!n||!p) return; db.ref('teamList/'+n).once('value', s => { if(!s.exists()) db.ref('teamList/'+n).set({pw:p}); else if(s.val().pw!==p) return alert("비번오류"); curT=n; document.getElementById('lobby').style.display='none'; document.getElementById('room').style.display='block'; document.getElementById('roomTitle').innerText=n; db.ref('teams/'+n+'/chat').on('value', ss => { let h=""; ss.forEach(c=>h+=`<div class="msg"><b>익명:</b> ${c.val().m}</div>`); document.getElementById('chatBox').innerHTML=h; document.getElementById('chatBox').scrollTop=999; }); db.ref('teams/'+n+'/log').on('value', ss=>document.getElementById('teamLog').value=ss.val()||""); }); }
+    function sendChat() { const m=document.getElementById('chatIn').value; if(!m) return; db.ref('teams/'+curT+'/chat').push({m}); document.getElementById('chatIn').value=''; }
     function syncLog() { db.ref('teams/'+curT+'/log').set(document.getElementById('teamLog').value); }
 
-    // 6. 성적 관리
-    function toggleG() { document.getElementById('sInput').style.display = document.getElementById('gType').value === 's' ? 'block' : 'none'; }
-    function saveGrade() {
-        const gs = JSON.parse(localStorage.getItem('g_v9')||'[]');
-        gs.push({ sub: document.getElementById('subN').value, score: document.getElementById('subS').value, info: document.getElementById('gType').value==='s'?`${document.getElementById('sY').value}-${document.getElementById('sE').value}`:'모의' });
-        localStorage.setItem('g_v9', JSON.stringify(gs)); renderGrades();
-    }
-    function renderGrades() { document.getElementById('gradeList').innerHTML = JSON.parse(localStorage.getItem('g_v9')||'[]').reverse().map(g=>`<div class="msg"><b>[${g.info}]</b> ${g.sub}: ${g.score}</div>`).join(''); }
+    function saveGrade() { const gs=JSON.parse(localStorage.getItem('g_v95')||'[]'); gs.push({t:document.getElementById('gType').value, n:document.getElementById('subN').value, s:document.getElementById('subS').value}); localStorage.setItem('g_v95', JSON.stringify(gs)); renderGrades(); }
+    function renderGrades() { document.getElementById('gradeArea').innerHTML = JSON.parse(localStorage.getItem('g_v95')||'[]').reverse().map(g=>`<div class="msg"><b>[${g.t}]</b> ${g.n}: ${g.s}</div>`).join(''); }
 
-    // 초기 실행
-    document.addEventListener('DOMContentLoaded', function() {
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'ko', events: JSON.parse(localStorage.getItem('ev_v9')||'[]') });
-        calendar.render(); initTT(); renderTodo(); renderDday(); renderGrades();
+    document.addEventListener('DOMContentLoaded', () => {
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'ko', events: JSON.parse(localStorage.getItem('ev_v95')||'[]') });
+        calendar.render(); initTT(); renderTodo(); renderDday(); renderGrades(); renderResearch();
     });
 </script>
 </body>
