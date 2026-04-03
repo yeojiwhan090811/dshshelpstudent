@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSHS 학업 매니저</title>
+    <title>DSHS 학업 & 탐구 매니저</title>
     <style>
         :root { --primary: #004ea2; --bg: #f8fafc; --accent: #2563eb; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
-        /* 네비게이션 */
         nav { background: var(--primary); display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .nav-btn { background: none; border: none; color: white; padding: 15px 25px; cursor: pointer; font-size: 1rem; font-weight: 600; opacity: 0.6; transition: 0.3s; }
         .nav-btn.active { opacity: 1; border-bottom: 3px solid #fff; }
@@ -17,7 +16,6 @@
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* 카드 공통 */
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px; }
         h2 { margin-top: 0; font-size: 1.2rem; color: var(--primary); }
 
@@ -29,18 +27,25 @@
         td:first-child { background: #f8fafc; font-weight: bold; width: 60px; }
         select { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; }
 
-        /* 탐구 기록장 스타일 */
+        /* 탐구 기록장 입력창 */
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
         input, textarea, .form-select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        textarea { height: 100px; resize: none; }
+        textarea { height: 80px; resize: none; }
         .btn-save { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* 저장된 리스트 */
+        /* 저장된 리스트 및 수정 스타일 */
         .idea-box { background: white; border-left: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0; position: relative; }
         .idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; margin-top: 10px; }
-        .item b { color: #64748b; font-size: 0.75rem; display: block; }
-        .del-btn { position: absolute; top: 10px; right: 10px; color: #ef4444; border: none; background: none; cursor: pointer; font-size: 0.75rem; }
+        
+        /* 실시간 수정을 위한 입력 스타일 */
+        .editable-input { border: 1px transparent; background: transparent; width: 100%; padding: 4px; font-size: 0.85rem; border-radius: 4px; transition: 0.2s; }
+        .editable-input:hover, .editable-input:focus { border: 1px solid #ddd; background: #fff; outline: none; }
+        .editable-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #333; }
+        
+        .item b { color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 2px; }
+        .del-btn { position: absolute; top: 10px; right: 10px; color: #ef4444; border: none; background: none; cursor: pointer; font-size: 0.75rem; opacity: 0.5; }
+        .del-btn:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -68,7 +73,7 @@
     <section id="research" class="content-section">
         <div class="card">
             <h2>새 탐구 아이디어 기록</h2>
-            <div class="input-group"><label>주제</label><input type="text" id="resTitle"></div>
+            <div class="input-group"><label>주제</label><input type="text" id="resTitle" placeholder="주제를 입력하세요"></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="input-group">
                     <label>관련 항목</label>
@@ -83,16 +88,15 @@
                     </select>
                 </div>
             </div>
-            <div class="input-group"><label>내용</label><textarea id="resContent"></textarea></div>
-            <div class="input-group"><label>추후 계획</label><input type="text" id="resPlan"></div>
-            <button class="btn-save" onclick="saveIdea()">기록 저장</button>
+            <div class="input-group"><label>내용</label><textarea id="resContent" placeholder="상세 내용을 입력하세요"></textarea></div>
+            <div class="input-group"><label>추후 계획</label><input type="text" id="resPlan" placeholder="계획을 입력하세요"></div>
+            <button class="btn-save" onclick="saveIdea()">새 기록 저장</button>
         </div>
         <div id="ideaListArea"></div>
     </section>
 </div>
 
 <script>
-    // 요청하신 과목 리스트 (그룹화하여 정리)
     const subjects = {
         "국어": ["문학", "화법과 언어", "주제 탐구 독서"],
         "수학": ["대수", "미적분1", "확률과 통계", "미적분2"],
@@ -110,6 +114,7 @@
         btn.classList.add('active');
     }
 
+    // 시간표 생성
     const ttBody = document.getElementById('ttBody');
     for (let i = 1; i <= 7; i++) {
         let row = `<tr><td>${i}</td>`;
@@ -122,51 +127,78 @@
             }
             row += `</select></td>`;
         }
-        row += `</tr>`;
         ttBody.innerHTML += row;
     }
 
     function saveTT() {
         const data = {};
         document.querySelectorAll('#ttBody select').forEach(s => { data[s.getAttribute('data-rc')] = s.value; });
-        localStorage.setItem('dshs_tt_final', JSON.stringify(data));
+        localStorage.setItem('dshs_tt_live', JSON.stringify(data));
     }
 
     function loadTT() {
-        const data = JSON.parse(localStorage.getItem('dshs_tt_final') || '{}');
+        const data = JSON.parse(localStorage.getItem('dshs_tt_live') || '{}');
         document.querySelectorAll('#ttBody select').forEach(s => { if(data[s.getAttribute('data-rc')]) s.value = data[s.getAttribute('data-rc')]; });
     }
 
+    // 아이디어 관리
     function saveIdea() {
         const title = document.getElementById('resTitle').value;
-        if(!title) return;
-        const idea = { id: Date.now(), cat: document.getElementById('resCategory').value, title: title, content: document.getElementById('resContent').value, status: document.getElementById('resStatus').value, plan: document.getElementById('resPlan').value };
-        const list = JSON.parse(localStorage.getItem('dshs_ideas_final') || '[]');
+        if(!title) return alert("주제를 입력해주세요!");
+        const idea = { 
+            id: Date.now(), 
+            cat: document.getElementById('resCategory').value, 
+            title: title, 
+            content: document.getElementById('resContent').value, 
+            status: document.getElementById('resStatus').value, 
+            plan: document.getElementById('resPlan').value 
+        };
+        const list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
         list.unshift(idea);
-        localStorage.setItem('dshs_ideas_final', JSON.stringify(list));
+        localStorage.setItem('dshs_ideas_live', JSON.stringify(list));
         renderIdeas();
         ['resTitle', 'resContent', 'resPlan'].forEach(id => document.getElementById(id).value = '');
     }
 
+    // 실시간 수정 기능 (입력 필드에서 포커스가 나갈 때 자동 저장)
+    function updateIdea(id, field, value) {
+        let list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
+        const index = list.findIndex(item => item.id === id);
+        if(index !== -1) {
+            list[index][field] = value;
+            localStorage.setItem('dshs_ideas_live', JSON.stringify(list));
+        }
+    }
+
     function renderIdeas() {
-        const list = JSON.parse(localStorage.getItem('dshs_ideas_final') || '[]');
+        const list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
         document.getElementById('ideaListArea').innerHTML = list.map(item => `
             <div class="idea-box">
                 <button class="del-btn" onclick="deleteIdea(${item.id})">삭제</button>
                 <div style="font-size:0.7rem; color:var(--accent); font-weight:bold;">${item.cat}</div>
-                <h3 style="margin:5px 0; font-size:1rem;">${item.title}</h3>
+                <input class="editable-input editable-title" value="${item.title}" onblur="updateIdea(${item.id}, 'title', this.value)">
                 <div class="idea-grid">
-                    <div class="item"><b>내용</b>${item.content}</div>
-                    <div class="item"><b>상태</b>${item.status}</div>
-                    <div class="item"><b>계획</b>${item.plan}</div>
+                    <div class="item">
+                        <b>내용</b>
+                        <textarea class="editable-input" style="height:60px;" onblur="updateIdea(${item.id}, 'content', this.value)">${item.content}</textarea>
+                    </div>
+                    <div class="item">
+                        <b>상태</b>
+                        <input class="editable-input" value="${item.status}" onblur="updateIdea(${item.id}, 'status', this.value)">
+                    </div>
+                    <div class="item" style="grid-column: span 2;">
+                        <b>계획</b>
+                        <input class="editable-input" value="${item.plan}" onblur="updateIdea(${item.id}, 'plan', this.value)">
+                    </div>
                 </div>
             </div>
         `).join('');
     }
 
     function deleteIdea(id) {
-        let list = JSON.parse(localStorage.getItem('dshs_ideas_final') || '[]');
-        localStorage.setItem('dshs_ideas_final', JSON.stringify(list.filter(i => i.id !== id)));
+        if(!confirm('정말 삭제하시겠습니까?')) return;
+        let list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
+        localStorage.setItem('dshs_ideas_live', JSON.stringify(list.filter(i => i.id !== id)));
         renderIdeas();
     }
 
