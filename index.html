@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSHS 학업 & 탐구 매니저</title>
+    <title>DSHS 팀 협업 매니저</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #004ea2; --bg: #f8fafc; --accent: #2563eb; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
-        nav { background: var(--primary); display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav-btn { background: none; border: none; color: white; padding: 15px 25px; cursor: pointer; font-size: 1rem; font-weight: 600; opacity: 0.6; transition: 0.3s; }
+        nav { background: var(--primary); display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; }
+        .nav-btn { background: none; border: none; color: white; padding: 15px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; opacity: 0.6; white-space: nowrap; }
         .nav-btn.active { opacity: 1; border-bottom: 3px solid #fff; }
 
         .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
@@ -17,96 +19,74 @@
         .content-section.active { display: block; }
 
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        h2 { margin-top: 0; font-size: 1.2rem; color: var(--primary); }
-
-        /* 시간표 스타일 */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 650px; }
-        th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: center; }
-        th { background: #f1f5f9; font-size: 0.85rem; }
-        td:first-child { background: #f8fafc; font-weight: bold; width: 60px; }
-        select { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; }
-
-        /* 탐구 기록장 입력창 */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-        input, textarea, .form-select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        textarea { height: 80px; resize: none; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-        /* 저장된 리스트 및 수정 스타일 */
-        .idea-box { background: white; border-left: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0; position: relative; }
-        .idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; margin-top: 10px; }
         
-        /* 실시간 수정을 위한 입력 스타일 */
-        .editable-input { border: 1px transparent; background: transparent; width: 100%; padding: 4px; font-size: 0.85rem; border-radius: 4px; transition: 0.2s; }
-        .editable-input:hover, .editable-input:focus { border: 1px solid #ddd; background: #fff; outline: none; }
-        .editable-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #333; }
+        /* 팀 프로젝트 & 채팅 스타일 */
+        .chat-box { height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #fdfdfd; }
+        .msg { margin-bottom: 8px; padding: 8px; border-radius: 8px; background: #f1f5f9; width: fit-content; max-width: 80%; }
+        .msg-me { background: #dbeafe; margin-left: auto; }
+        .msg-user { font-size: 0.7rem; color: #666; display: block; }
+
+        .input-row { display: flex; gap: 8px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        .item b { color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 2px; }
-        .del-btn { position: absolute; top: 10px; right: 10px; color: #ef4444; border: none; background: none; cursor: pointer; font-size: 0.75rem; opacity: 0.5; }
-        .del-btn:hover { opacity: 1; }
+        /* 리스트 아이템 */
+        .team-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
 <nav>
     <button class="nav-btn active" onclick="showTab('timetable', this)">📅 시간표</button>
-    <button class="nav-btn" onclick="showTab('research', this)">💡 탐구 기록장</button>
+    <button class="nav-btn" onclick="showTab('research', this)">💡 개인 탐구</button>
+    <button class="nav-btn" onclick="showTab('team', this)">👥 팀 프로젝트</button>
 </nav>
 
 <div class="container">
     <section id="timetable" class="content-section active">
-        <div class="card">
-            <h2>7교시 주간 시간표</h2>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>
-                    </thead>
-                    <tbody id="ttBody"></tbody>
-                </table>
-            </div>
-        </div>
+        <div class="card"><h2>7교시 주간 시간표</h2><div id="ttDisplay"></div></div>
     </section>
 
     <section id="research" class="content-section">
+        <div class="card"><h2>개인 탐구 기록장</h2><div id="personalList"></div></div>
+    </section>
+
+    <section id="team" class="content-section">
         <div class="card">
-            <h2>새 탐구 아이디어 기록</h2>
-            <div class="input-group"><label>주제</label><input type="text" id="resTitle" placeholder="주제를 입력하세요"></div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div class="input-group">
-                    <label>관련 항목</label>
-                    <select id="resCategory" class="form-select">
-                        <option>공학/IT</option><option>수학/과학</option><option>인문/사회</option><option>기타</option>
-                    </select>
+            <h2>👥 팀 프로젝트 공간</h2>
+            <p style="font-size: 0.8rem; color: #666;">* 같은 '팀 코드'를 입력한 팀원들과 실시간으로 공유됩니다.</p>
+            <div class="input-row" style="margin-bottom: 15px;">
+                <input type="text" id="teamCode" placeholder="팀 코드 입력 (예: dshs_robot_01)">
+                <input type="text" id="userName" placeholder="내 이름" style="width: 120px;">
+                <button class="btn" onclick="joinTeam()">접속</button>
+            </div>
+        </div>
+
+        <div id="teamSpace" style="display: none;">
+            <div class="card">
+                <h3>📁 공유 자료 & 아이디어</h3>
+                <div class="input-row">
+                    <input type="text" id="shareTitle" placeholder="제목">
+                    <input type="text" id="shareLink" placeholder="링크 또는 내용">
+                    <button class="btn" onclick="shareData()">공유</button>
                 </div>
-                <div class="input-group">
-                    <label>진행 정도</label>
-                    <select id="resStatus" class="form-select">
-                        <option>아이디어</option><option>조사중</option><option>실험중</option><option>작성중</option><option>완료</option>
-                    </select>
+                <div id="sharedList" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="card">
+                <h3>💬 팀 채팅</h3>
+                <div id="chatBox" class="chat-box"></div>
+                <div class="input-row">
+                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) sendChat()">
+                    <button class="btn" onclick="sendChat()">전송</button>
                 </div>
             </div>
-            <div class="input-group"><label>내용</label><textarea id="resContent" placeholder="상세 내용을 입력하세요"></textarea></div>
-            <div class="input-group"><label>추후 계획</label><input type="text" id="resPlan" placeholder="계획을 입력하세요"></div>
-            <button class="btn-save" onclick="saveIdea()">새 기록 저장</button>
         </div>
-        <div id="ideaListArea"></div>
     </section>
 </div>
 
 <script>
-    const subjects = {
-        "국어": ["문학", "화법과 언어", "주제 탐구 독서"],
-        "수학": ["대수", "미적분1", "확률과 통계", "미적분2"],
-        "영어": ["영어1", "영어 발표와 토론", "미디어 영어", "영어 독해와 작문"],
-        "사회/역사/도덕": ["한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계"],
-        "과학": ["물리학", "화학", "생명과학", "지구과학", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구"],
-        "공학/정보": ["로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "창의 공학 설계", "데이터 과학"],
-        "기타": ["자율", "진로", "동아리", "창체", "봉사"]
-    };
-
+    // --- 기본 기능 로직 ---
     function showTab(id, btn) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -114,95 +94,91 @@
         btn.classList.add('active');
     }
 
-    // 시간표 생성
-    const ttBody = document.getElementById('ttBody');
-    for (let i = 1; i <= 7; i++) {
-        let row = `<tr><td>${i}</td>`;
-        for (let j = 0; j < 5; j++) {
-            row += `<td><select onchange="saveTT()" data-rc="${i}-${j}"><option value="">-</option>`;
-            for (const [group, subs] of Object.entries(subjects)) {
-                row += `<optgroup label="${group}">`;
-                subs.forEach(s => row += `<option value="${s}">${s}</option>`);
-                row += `</optgroup>`;
+    // --- Firebase 설정 (공용 무료 DB 사용) ---
+    // 실제 배포 시에는 본인만의 Firebase 프로젝트를 생성하여 키를 넣는 것이 보안상 좋습니다.
+    const firebaseConfig = {
+        databaseURL: "https://dshs-help-default-rtdb.firebaseio.com/" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentTeam = null;
+    let myName = "익명";
+
+    function joinTeam() {
+        currentTeam = document.getElementById('teamCode').value;
+        myName = document.getElementById('userName').value || "익명";
+        
+        if(!currentTeam) return alert("팀 코드를 입력하세요!");
+        
+        document.getElementById('teamSpace').style.display = 'block';
+        alert(currentTeam + " 팀에 접속되었습니다.");
+        
+        // 실시간 리스너 연결
+        loadTeamData();
+        loadChat();
+    }
+
+    function shareData() {
+        const title = document.getElementById('shareTitle').value;
+        const link = document.getElementById('shareLink').value;
+        if(!title || !link) return;
+
+        db.ref('teams/' + currentTeam + '/shares').push({
+            user: myName,
+            title: title,
+            link: link,
+            time: Date.now()
+        });
+        document.getElementById('shareTitle').value = '';
+        document.getElementById('shareLink').value = '';
+    }
+
+    function loadTeamData() {
+        db.ref('teams/' + currentTeam + '/shares').on('value', (snapshot) => {
+            const data = snapshot.val();
+            let html = "";
+            for(let key in data) {
+                html += `<div class="team-item">
+                    <span><b>[${data[key].user}]</b> ${data[key].title} : <a href="${data[key].link}" target="_blank">${data[key].link}</a></span>
+                    <button onclick="deleteData('${key}')" style="font-size:0.6rem; color:red; border:none; background:none; cursor:pointer;">삭제</button>
+                </div>`;
             }
-            row += `</select></td>`;
-        }
-        ttBody.innerHTML += row;
+            document.getElementById('sharedList').innerHTML = html;
+        });
     }
 
-    function saveTT() {
-        const data = {};
-        document.querySelectorAll('#ttBody select').forEach(s => { data[s.getAttribute('data-rc')] = s.value; });
-        localStorage.setItem('dshs_tt_live', JSON.stringify(data));
-    }
-
-    function loadTT() {
-        const data = JSON.parse(localStorage.getItem('dshs_tt_live') || '{}');
-        document.querySelectorAll('#ttBody select').forEach(s => { if(data[s.getAttribute('data-rc')]) s.value = data[s.getAttribute('data-rc')]; });
-    }
-
-    // 아이디어 관리
-    function saveIdea() {
-        const title = document.getElementById('resTitle').value;
-        if(!title) return alert("주제를 입력해주세요!");
-        const idea = { 
-            id: Date.now(), 
-            cat: document.getElementById('resCategory').value, 
-            title: title, 
-            content: document.getElementById('resContent').value, 
-            status: document.getElementById('resStatus').value, 
-            plan: document.getElementById('resPlan').value 
-        };
-        const list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
-        list.unshift(idea);
-        localStorage.setItem('dshs_ideas_live', JSON.stringify(list));
-        renderIdeas();
-        ['resTitle', 'resContent', 'resPlan'].forEach(id => document.getElementById(id).value = '');
-    }
-
-    // 실시간 수정 기능 (입력 필드에서 포커스가 나갈 때 자동 저장)
-    function updateIdea(id, field, value) {
-        let list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
-        const index = list.findIndex(item => item.id === id);
-        if(index !== -1) {
-            list[index][field] = value;
-            localStorage.setItem('dshs_ideas_live', JSON.stringify(list));
+    function deleteData(key) {
+        if(confirm("개설자/작성자 권한으로 삭제하시겠습니까?")) {
+            db.ref('teams/' + currentTeam + '/shares/' + key).remove();
         }
     }
 
-    function renderIdeas() {
-        const list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
-        document.getElementById('ideaListArea').innerHTML = list.map(item => `
-            <div class="idea-box">
-                <button class="del-btn" onclick="deleteIdea(${item.id})">삭제</button>
-                <div style="font-size:0.7rem; color:var(--accent); font-weight:bold;">${item.cat}</div>
-                <input class="editable-input editable-title" value="${item.title}" onblur="updateIdea(${item.id}, 'title', this.value)">
-                <div class="idea-grid">
-                    <div class="item">
-                        <b>내용</b>
-                        <textarea class="editable-input" style="height:60px;" onblur="updateIdea(${item.id}, 'content', this.value)">${item.content}</textarea>
-                    </div>
-                    <div class="item">
-                        <b>상태</b>
-                        <input class="editable-input" value="${item.status}" onblur="updateIdea(${item.id}, 'status', this.value)">
-                    </div>
-                    <div class="item" style="grid-column: span 2;">
-                        <b>계획</b>
-                        <input class="editable-input" value="${item.plan}" onblur="updateIdea(${item.id}, 'plan', this.value)">
-                    </div>
-                </div>
-            </div>
-        `).join('');
+    function sendChat() {
+        const msg = document.getElementById('chatInput').value;
+        if(!msg) return;
+
+        db.ref('teams/' + currentTeam + '/chats').push({
+            user: myName,
+            msg: msg,
+            time: Date.now()
+        });
+        document.getElementById('chatInput').value = '';
     }
 
-    function deleteIdea(id) {
-        if(!confirm('정말 삭제하시겠습니까?')) return;
-        let list = JSON.parse(localStorage.getItem('dshs_ideas_live') || '[]');
-        localStorage.setItem('dshs_ideas_live', JSON.stringify(list.filter(i => i.id !== id)));
-        renderIdeas();
+    function loadChat() {
+        db.ref('teams/' + currentTeam + '/chats').limitToLast(20).on('value', (snapshot) => {
+            const data = snapshot.val();
+            let html = "";
+            for(let key in data) {
+                const isMe = data[key].user === myName ? "msg-me" : "";
+                html += `<div class="msg ${isMe}"><span class="msg-user">${data[key].user}</span>${data[key].msg}</div>`;
+            }
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = html;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
     }
-
-    window.onload = () => { loadTT(); renderIdeas(); };
 </script>
 
 </body>
