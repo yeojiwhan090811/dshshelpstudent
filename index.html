@@ -3,82 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSHS AI All-in-One Manager v7.5</title>
+    <title>DSHS AI Master Manager v8.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <style>
-        :root { --primary: #004ea2; --bg: #f3f4f6; --accent: #2563eb; --ai: #7c3aed; --success: #10b981; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; color: #1e293b; }
-        nav { background: var(--primary); display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        :root { --primary: #004ea2; --bg: #f3f4f6; --ai: #7c3aed; --danger: #ef4444; --success: #10b981; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); margin: 0; color: #1e293b; }
+        
+        /* Navigation */
+        nav { background: var(--primary); display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { background: none; border: none; color: white; padding: 15px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; white-space: nowrap; opacity: 0.7; transition: 0.3s; }
         .nav-btn.active { opacity: 1; border-bottom: 4px solid #fff; }
+
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .content-section { display: none; animation: fadeIn 0.3s ease; }
+        .content-section { display: none; animation: fadeIn 0.4s ease; }
         .content-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* UI Components */
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 24px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; font-size: 14px; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-ai { background: var(--ai); }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .box { height: 300px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .msg { background: white; padding: 8px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; background: #ede9fe; color: #6d28d9; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: center; }
-        th { background: #f8fafc; }
+        .btn-danger { background: var(--danger); }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+        .box { height: 300px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .msg { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); position: relative; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: center; }
+        th { background: #f8fafc; color: #64748b; font-size: 0.8rem; }
+
+        /* FullCalendar Custom */
+        #calendar { height: 500px; margin-top: 10px; }
+        .fc-toolbar-title { font-size: 1.2rem !important; }
     </style>
 </head>
 <body>
 
 <nav>
-    <button class="nav-btn active" onclick="showTab('home', this)">🏠 메인</button>
-    <button class="nav-btn" onclick="showTab('research', this)">💡 탐구 & AI 분석</button>
+    <button class="nav-btn active" onclick="showTab('home', this)">🏠 대시보드</button>
+    <button class="nav-btn" onclick="showTab('calendar-sec', this)">📅 학업 달력</button>
+    <button class="nav-btn" onclick="showTab('research', this)">💡 AI 탐구분석</button>
     <button class="nav-btn" onclick="showTab('team', this)">👥 팀 프로젝트</button>
-    <button class="nav-btn" onclick="showTab('scheduler', this)">📅 일정 & 성적</button>
+    <button class="nav-btn" onclick="showTab('grade', this)">📈 성적 관리</button>
 </nav>
 
 <div class="container">
     <section id="home" class="content-section active">
         <div class="grid">
             <div class="card">
-                <h3>📅 내 주간 시간표</h3>
-                <table>
-                    <thead id="ttHead"></thead><tbody id="ttBody"></tbody>
-                </table>
+                <h3>⏰ 오늘 내 시간표</h3>
+                <table id="mainTT"></table>
             </div>
             <div class="card">
-                <h3>🔔 오늘의 할 일 & D-Day</h3>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="todoIn" placeholder="할 일을 입력하세요...">
-                    <button class="btn" style="width:80px;" onclick="addTodo()">추가</button>
+                <h3>🔥 집중 체크리스트 & D-Day</h3>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="todoIn" placeholder="지금 바로 해야 할 일은?">
+                    <button class="btn" onclick="addTodo()" style="width:100px;">추가</button>
                 </div>
-                <div id="todoList" class="box" style="height:200px;"></div>
-                <hr>
-                <h4>📌 주요 마감 일정</h4>
-                <div id="ddayList" style="font-size:0.9rem; color:var(--accent);">일정 탭에서 등록하세요!</div>
+                <div id="todoList" class="box" style="height:150px;"></div>
+                <div id="ddayContainer" style="margin-top:15px; border-top:1px solid #eee; pt:15px;">
+                    <h4>⏳ 다가오는 마감 (D-Day)</h4>
+                    <div id="quickDday"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="calendar-sec" class="content-section">
+        <div class="grid" style="grid-template-columns: 1fr 2fr;">
+            <div class="card">
+                <h3>📅 일정 등록</h3>
+                <input type="text" id="eventTitle" placeholder="일정 이름 (수행평가, 대회 등)">
+                <input type="date" id="eventDate">
+                <select id="eventColor">
+                    <option value="#004ea2">기본(파랑)</option>
+                    <option value="#ef4444">중요(빨강)</option>
+                    <option value="#7c3aed">AI/탐구(보라)</option>
+                    <option value="#10b981">개인(초록)</option>
+                </select>
+                <button class="btn" onclick="addEvent()">달력에 추가</button>
+                <div id="eventList" style="margin-top:20px; font-size:0.85rem;"></div>
+            </div>
+            <div class="card">
+                <div id="calendar"></div>
             </div>
         </div>
     </section>
 
     <section id="research" class="content-section">
         <div class="card">
-            <h3>📑 생기부 데이터 기반 AI 역량 분석</h3>
-            <textarea id="pastRecord" style="height:120px;" placeholder="기존 생기부 세특 내용을 붙여넣으세요. AI가 부족한 역량과 심화 주제를 제안합니다."></textarea>
-            <button class="btn btn-ai" onclick="analyzePastRecord()">🔍 AI 심층 분석 시작</button>
-            <div id="analysisResult" class="card" style="display:none; margin-top:15px; background:#f5f3ff; border-left:5px solid var(--ai);"></div>
-        </div>
-        <div class="card">
-            <h3>📝 새 탐구 노트 작성</h3>
-            <div class="grid">
-                <div>
-                    <input type="text" id="pTitle" placeholder="탐구 주제 (예: 자율주행 알고리즘 제어)">
-                    <textarea id="pContent" style="height:100px;" placeholder="탐구 내용, 가설, 진행 상황 기록..."></textarea>
-                    <button class="btn btn-ai" onclick="saveResearch()">💾 저장 및 AI 피드백</button>
-                </div>
-                <div id="instantAi" class="box" style="background:#fff;">AI가 실시간 연구 컨설팅을 제공합니다.</div>
-            </div>
+            <h3>📑 생기부 AI 컨설팅</h3>
+            <p style="color:#64748b; font-size:0.9rem;">기존 생기부 내용을 넣으시면 부족한 공학적 역량과 심화 키워드를 추출합니다.</p>
+            <textarea id="pastRecord" style="height:150px;" placeholder="세특 내용을 복사해서 붙여넣으세요..."></textarea>
+            <button class="btn btn-ai" onclick="analyzePastRecord()">🔍 AI 심층 역량 분석</button>
+            <div id="analysisResult" class="card" style="display:none; margin-top:15px; background:#f5f3ff;"></div>
         </div>
         <div id="resList"></div>
     </section>
@@ -86,142 +113,161 @@
     <section id="team" class="content-section">
         <div id="lobby">
             <div class="card">
-                <h3>👥 팀 협업 공간 입장</h3>
-                <input type="text" id="tName" placeholder="팀 이름 (중복 주의)">
-                <input type="password" id="tPw" placeholder="방장 설정 비밀번호">
-                <button class="btn" onclick="handleTeam()">접속 또는 팀 생성</button>
+                <h3>👥 프로젝트 룸 생성/참여</h3>
+                <input type="text" id="tName" placeholder="프로젝트 이름">
+                <input type="password" id="tPw" placeholder="방 비밀번호 (삭제 시 필요)">
+                <button class="btn" onclick="handleTeam()">프로젝트 시작하기</button>
             </div>
-            <div class="card"><h4>🌐 활성 프로젝트 목록</h4><div id="tList"></div></div>
+            <div class="card">
+                <h4>🌐 우리 팀 프로젝트 목록</h4>
+                <div id="tList"></div>
+            </div>
         </div>
         <div id="room" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 id="roomTitle" style="margin:0;"></h2>
-                <button onclick="location.reload()" class="btn" style="width:auto; background:#64748b;">← 로비로</button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <button onclick="location.reload()" class="btn" style="background:#64748b;">← 나가기</button>
+                <h2 id="roomTitle"></h2>
+                <button onclick="deleteProject()" class="btn btn-danger">🗑️ 프로젝트 영구 삭제</button>
             </div>
             <div class="grid">
                 <div class="card">
-                    <h4>💬 실시간 팀 채팅</h4>
+                    <h4>💬 실시간 협업 채팅</h4>
                     <div id="chatBox" class="box"></div>
                     <div style="display:flex; gap:5px;">
-                        <input type="text" id="chatIn" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) sendChat()">
-                        <button class="btn" style="width:70px;" onclick="sendChat()">전송</button>
+                        <input type="text" id="chatIn" placeholder="의견 공유..." onkeypress="if(event.keyCode==13) sendChat()">
+                        <button class="btn" onclick="sendChat()">전송</button>
                     </div>
                 </div>
                 <div class="card">
-                    <h4>📂 공동 연구 로그 (실시간 공유)</h4>
-                    <textarea id="teamLog" style="height:350px;" placeholder="팀원들과 내용을 실시간으로 작성하세요." onkeyup="syncLog()"></textarea>
+                    <h4>📂 공동 연구 로그</h4>
+                    <textarea id="teamLog" style="height:350px;" placeholder="팀원들과 내용을 실시간으로 공유하며 기록하세요." onkeyup="syncLog()"></textarea>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="scheduler" class="content-section">
-        <div class="grid">
-            <div class="card">
-                <h3>📅 중요 일정 등록 (D-Day)</h3>
-                <input type="text" id="eventTitle" placeholder="일정 이름 (예: Cansat 대회)">
-                <input type="date" id="eventDate">
-                <button class="btn" onclick="addEvent()">일정 추가</button>
-                <div id="eventDisplay" style="margin-top:15px;"></div>
+    <section id="grade" class="content-section">
+        <div class="card">
+            <h3>📈 성적 히스토리</h3>
+            <div class="grid" style="grid-template-columns: 2fr 1fr 1fr;">
+                <input type="text" id="subName" placeholder="과목명">
+                <input type="number" id="subScore" placeholder="점수">
+                <button class="btn" onclick="addGrade()">기록하기</button>
             </div>
-            <div class="card">
-                <h3>📈 성적 추이 관리</h3>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="subName" placeholder="과목명" style="width:60%;">
-                    <input type="number" id="subScore" placeholder="점수" style="width:40%;">
-                </div>
-                <button class="btn" onclick="addGrade()">성적 기록</button>
-                <div id="gradeList" class="box" style="height:150px; margin-top:10px;"></div>
-            </div>
+            <div id="gradeArea" class="box" style="height:auto; min-height:200px;"></div>
         </div>
     </section>
 </div>
 
 <script>
-    // Firebase 설정 (사용자님 주소 적용)
+    // Firebase 연결 (사용자 프로젝트 주소)
     const firebaseConfig = { databaseURL: "https://dshs-app-5af42-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let myUid = localStorage.getItem('dshs_uid') || 'u' + Math.random().toString(36).substr(2, 5);
-    localStorage.setItem('dshs_uid', myUid);
+    let calendar;
 
+    // 탭 전환 및 달력 렌더링
     function showTab(id, b) {
         document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
         document.getElementById(id).classList.add('active'); b.classList.add('active');
+        if(id === 'calendar-sec') { setTimeout(() => calendar.render(), 100); }
     }
 
-    // 시간표 시스템
-    const subjects = ["문학","대수","미적1","영1","물1","화1","생1","지1","로봇","AI","데이터","창공","진로","자율"];
-    document.getElementById('ttHead').innerHTML = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
-    let ttHtml = "";
-    for(let i=1; i<=7; i++) {
-        ttHtml += `<tr><td>${i}</td>`;
-        for(let j=0; j<5; j++) ttHtml += `<td><select class="tt-s" data-rc="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subjects.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`;
-        ttHtml += `</tr>`;
+    // 시간표 (DSHS 전용)
+    const subList = ["문학","대수","미적1","영1","물1","화1","생1","지1","로봇","AI","데이터","창공","진로","자율"];
+    function initTT() {
+        let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
+        for(let i=1; i<=7; i++){
+            h += `<tr><td>${i}</td>`;
+            for(let j=0; j<5; j++) h += `<td><select class="tt-s" data-rc="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subList.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`;
+            h += `</tr>`;
+        }
+        document.getElementById('mainTT').innerHTML = h;
+        const d = JSON.parse(localStorage.getItem('tt_v8')||'{}');
+        document.querySelectorAll('.tt-s').forEach(s=>{ if(d[s.dataset.rc]) s.value=d[s.dataset.rc]; });
     }
-    document.getElementById('ttBody').innerHTML = ttHtml;
+    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s=>d[s.dataset.rc]=s.value); localStorage.setItem('tt_v8', JSON.stringify(d)); }
 
-    function saveTT() { const d = {}; document.querySelectorAll('.tt-s').forEach(s=>d[s.dataset.rc]=s.value); localStorage.setItem('tt_v75', JSON.stringify(d)); }
-    function loadTT() { const d = JSON.parse(localStorage.getItem('tt_v75')||'{}'); document.querySelectorAll('.tt-s').forEach(s=>{if(d[s.dataset.rc]) s.value=d[s.dataset.rc]}); }
-
-    // 할 일(Todo) 기능
+    // 할 일 & D-Day
     function addTodo() {
-        const val = document.getElementById('todoIn').value; if(!val) return;
-        const list = JSON.parse(localStorage.getItem('todo_v75')||'[]');
-        list.push(val); localStorage.setItem('todo_v75', JSON.stringify(list));
-        document.getElementById('todoIn').value = ''; renderTodo();
+        const v = document.getElementById('todoIn').value; if(!v) return;
+        const l = JSON.parse(localStorage.getItem('todo_v8')||'[]');
+        l.push(v); localStorage.setItem('todo_v8', JSON.stringify(l));
+        document.getElementById('todoIn').value=''; renderTodo();
     }
     function renderTodo() {
-        const list = JSON.parse(localStorage.getItem('todo_v75')||'[]');
-        document.getElementById('todoList').innerHTML = list.map((t, idx) => `<div class="msg" onclick="removeTodo(${idx})">✅ ${t}</div>`).join('');
+        const l = JSON.parse(localStorage.getItem('todo_v8')||'[]');
+        document.getElementById('todoList').innerHTML = l.map((t,i)=>`<div class="msg" onclick="delTodo(${i})">✅ ${t}</div>`).join('');
     }
-    function removeTodo(idx) {
-        const list = JSON.parse(localStorage.getItem('todo_v75')||'[]');
-        list.splice(idx, 1); localStorage.setItem('todo_v75', JSON.stringify(list)); renderTodo();
+    function delTodo(i) { const l = JSON.parse(localStorage.getItem('todo_v8')||'[]'); l.splice(i,1); localStorage.setItem('todo_v8', JSON.stringify(l)); renderTodo(); }
+
+    // 달력 및 일정 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        const calEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ko',
+            events: JSON.parse(localStorage.getItem('events_v8')||'[]'),
+            headerToolbar: { left: 'prev,next', center: 'title', right: 'today' }
+        });
+        calendar.render();
+        initTT(); renderTodo(); renderEvents(); renderGrades();
+    });
+
+    function addEvent() {
+        const title = document.getElementById('eventTitle').value;
+        const start = document.getElementById('eventDate').value;
+        const color = document.getElementById('eventColor').value;
+        if(!title || !start) return;
+        const evs = JSON.parse(localStorage.getItem('events_v8')||'[]');
+        const newEv = { title, start, color, allDay: true };
+        evs.push(newEv); localStorage.setItem('events_v8', JSON.stringify(evs));
+        calendar.addEvent(newEv); renderEvents();
     }
 
-    // AI 분석 기능
+    function renderEvents() {
+        const evs = JSON.parse(localStorage.getItem('events_v8')||'[]');
+        const now = new Date();
+        let dHtml = "";
+        evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).forEach(e => {
+            const diff = Math.ceil((new Date(e.start)-now)/(1000*60*60*24));
+            const dText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
+            dHtml += `<div class="msg" style="border-left:4px solid ${e.color}"><b>${dText}</b> | ${e.title} (${e.start})</div>`;
+        });
+        document.getElementById('quickDday').innerHTML = dHtml;
+        document.getElementById('eventList').innerHTML = dHtml;
+    }
+
+    // AI 분석
     function analyzePastRecord() {
-        const text = document.getElementById('pastRecord').value; if(!text) return;
+        const t = document.getElementById('pastRecord').value; if(!t) return;
         const res = document.getElementById('analysisResult');
-        res.style.display = 'block'; res.innerHTML = "<b>AI 분석 중...</b> 학생부의 공학적 도구 활용 능력과 수학적 모델링 역량을 추출하고 있습니다.";
+        res.style.display='block'; res.innerHTML = "AI 분석 중... 공학적 연계성을 찾고 있습니다.";
         setTimeout(() => {
-            res.innerHTML = `<h4>✅ AI 분석 리포트</h4><b>분석 결과:</b> "디지털 트윈 및 제어 시스템" 분야의 관심도가 높게 나타남.<br><b>보완점:</b> 알고리즘의 한계를 수학적으로 증명하는 과정이 추가되면 최상급 세특이 됩니다.<br><b>추천 주제:</b> PID 제어의 오차율을 최소화하는 최적화 알고리즘 연구`;
+            res.innerHTML = `<h4>💡 AI 분석 결과</h4><b>핵심 강점:</b> 하드웨어 제어 및 물리 법칙 적용 역량 우수<br><b>발전 방향:</b> 데이터를 통한 알고리즘의 최적화(Optimization) 과정 증명 필요<br><b>심화 주제 추천:</b> "에너지 효율을 극대화하는 센서 네트워크 데이터 정제 모델 연구"`;
         }, 1500);
     }
 
-    function saveResearch() {
-        const t = document.getElementById('pTitle').value, c = document.getElementById('pContent').value; if(!t) return;
-        const aiMsg = `[AI 피드백] ${t} 주제는 매우 흥미롭습니다. 실제 하드웨어 구현 시 발생할 수 있는 노이즈 제거 방안을 추가해 보세요.`;
-        document.getElementById('instantAi').innerText = aiMsg;
-        const list = JSON.parse(localStorage.getItem('res_v75')||'[]');
-        list.unshift({t, c, aiMsg, date: new Date().toLocaleDateString()});
-        localStorage.setItem('res_v75', JSON.stringify(list)); renderRes();
-    }
-    function renderRes() {
-        const list = JSON.parse(localStorage.getItem('res_v75')||'[]');
-        document.getElementById('resList').innerHTML = list.map(i => `<div class="card"><span class="badge">연구 기록</span><h4>${i.t}</h4><p>${i.c}</p><div style="font-size:0.85rem; color:var(--ai); font-style:italic;">${i.aiMsg}</div></div>`).join('');
-    }
-
-    // 팀 프로젝트 (Firebase 실시간)
-    let curT = "";
+    // 팀 프로젝트 (삭제 기능 추가)
+    let curT = "", curPw = "";
     function handleTeam() {
-        const n = document.getElementById('tName').value, p = document.getElementById('tPw').value; if(!n || !p) return;
+        const n = document.getElementById('tName').value, p = document.getElementById('tPw').value;
+        if(!n || !p) return;
         db.ref('teamList/'+n).once('value', ss => {
             if(!ss.exists()) db.ref('teamList/'+n).set({pw:p});
-            else if(ss.val().pw !== p) return alert("비밀번호가 일치하지 않습니다.");
-            enterRoom(n);
+            else if(ss.val().pw !== p) return alert("비밀번호 불일치");
+            curPw = p; enterRoom(n);
         });
     }
     db.ref('teamList').on('value', ss => {
         let h = ""; const d = ss.val();
-        for(let n in d) h += `<div class="msg" style="display:flex; justify-content:space-between;"><b># ${n}</b> <button onclick="enterRoom('${n}')" style="font-size:0.7rem; cursor:pointer;">참가</button></div>`;
-        document.getElementById('tList').innerHTML = h;
+        for(let n in d) h += `<div class="msg" style="display:flex; justify-content:space-between; align-items:center;"><b># ${n}</b> <button class="btn" style="width:auto; padding:5px 15px;" onclick="enterRoom('${n}')">참가</button></div>`;
+        document.getElementById('tList').innerHTML = h || "활성 프로젝트가 없습니다.";
     });
     function enterRoom(n) {
         curT = n; document.getElementById('lobby').style.display='none'; document.getElementById('room').style.display='block';
-        document.getElementById('roomTitle').innerText = n + " 프로젝트 보드";
+        document.getElementById('roomTitle').innerText = n;
         db.ref('teams/'+n+'/chat').limitToLast(30).on('value', ss => {
             let h = ""; const d = ss.val();
             for(let k in d) h += `<div class="msg"><b>${d[k].u}:</b> ${d[k].m}</div>`;
@@ -232,30 +278,31 @@
     function sendChat() { const m = document.getElementById('chatIn').value; if(!m)return; db.ref('teams/'+curT+'/chat').push({u:'학생', m}); document.getElementById('chatIn').value=''; }
     function syncLog() { db.ref('teams/'+curT+'/log').set(document.getElementById('teamLog').value); }
 
-    // 일정 & 성적
-    function addEvent() {
-        const t = document.getElementById('eventTitle').value, d = document.getElementById('eventDate').value; if(!t || !d) return;
-        const list = JSON.parse(localStorage.getItem('ev_v75')||'[]');
-        list.push({t, d}); localStorage.setItem('ev_v75', JSON.stringify(list)); renderEvents();
-    }
-    function renderEvents() {
-        const list = JSON.parse(localStorage.getItem('ev_v75')||'[]');
-        const h = list.map(i => `<div><b>${i.t}</b>: ${i.d}</div>`).join('');
-        document.getElementById('eventDisplay').innerHTML = h;
-        document.getElementById('ddayList').innerHTML = h || "등록된 일정이 없습니다.";
+    function deleteProject() {
+        if(!confirm("⚠️ 경고: 팀 프로젝트가 영구적으로 삭제됩니다. 계속하시겠습니까?")) return;
+        const check = prompt("방 생성 시 설정한 비밀번호를 입력하세요.");
+        db.ref('teamList/'+curT).once('value', ss => {
+            if(ss.val().pw === check) {
+                db.ref('teamList/'+curT).remove();
+                db.ref('teams/'+curT).remove();
+                alert("프로젝트가 삭제되었습니다.");
+                location.reload();
+            } else alert("비밀번호가 틀렸습니다.");
+        });
     }
 
+    // 성적 관리
     function addGrade() {
-        const n = document.getElementById('subName').value, s = document.getElementById('subScore').value; if(!n || !s) return;
-        const list = JSON.parse(localStorage.getItem('gr_v75')||'[]');
-        list.push({n, s}); localStorage.setItem('gr_v75', JSON.stringify(list)); renderGrades();
+        const n = document.getElementById('subName').value, s = document.getElementById('subScore').value;
+        if(!n || !s) return;
+        const g = JSON.parse(localStorage.getItem('grades_v8')||'[]');
+        g.push({n, s, date: new Date().toLocaleDateString()});
+        localStorage.setItem('grades_v8', JSON.stringify(g)); renderGrades();
     }
     function renderGrades() {
-        const list = JSON.parse(localStorage.getItem('gr_v75')||'[]');
-        document.getElementById('gradeList').innerHTML = list.map(i => `<div class="msg">${i.n}: ${i.s}점</div>`).join('');
+        const g = JSON.parse(localStorage.getItem('grades_v8')||'[]');
+        document.getElementById('gradeArea').innerHTML = g.map(i => `<div class="msg"><b>${i.n}</b>: ${i.s}점 <small style="color:#999; margin-left:10px;">(${i.date})</small></div>`).join('');
     }
-
-    window.onload = () => { loadTT(); renderTodo(); renderRes(); renderEvents(); renderGrades(); };
 </script>
 </body>
 </html>
