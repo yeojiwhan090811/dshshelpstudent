@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v13.9</title>
+    <title>DSHS AI Master v14.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -54,9 +54,6 @@
         .fc-daygrid-day-number { color: #fff !important; font-size: 0.8rem !important; padding: 5px !important; }
         .fc-day-sat .fc-daygrid-day-number { color: #5dade2 !important; } 
         .fc-day-sun .fc-daygrid-day-number { color: #ec7063 !important; } 
-        .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 800; color: white !important; }
-        .fc .fc-button-primary { background: rgba(251, 192, 45, 0.2) !important; border: 1px solid var(--point-gold) !important; color: var(--point-gold) !important; font-size: 0.7rem; font-weight: bold; }
-        .fc .fc-button-active { background: var(--point-gold) !important; color: var(--bg-dark) !important; }
 
         .chart-container { height: 250px; width: 100%; }
     </style>
@@ -123,7 +120,7 @@
             <div id="opt_inner" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;"></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;">
                 <select id="g_sub_select"></select>
-                <input type="number" id="g_val" placeholder="등급/점수" step="0.1">
+                <input type="number" id="g_val" placeholder="등급 (1~5)" min="1" max="5" step="1">
             </div>
             <button class="btn" onclick="saveGrade()">기록하기</button>
         </div>
@@ -137,17 +134,16 @@
     const db = firebase.database();
     let calendar, gradeChart;
 
-    // 요청하신 과목 리스트 (그대로 적용)
     const DSHS_SUBJECTS = ["문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학", "자율", "진로", "스포츠생활1", "스포츠생활2", "동아리"];
+    
+    // 모의고사 전용 과목 리스트
+    const MOCK_SUBJECTS = ["국어", "수학", "영어", "한국사", "통합사회", "통합과학"];
 
     function showTab(id, b) {
         document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
         document.getElementById(id).classList.add('active'); b.classList.add('active');
-        if(id === 'schedule') { 
-            setTimeout(() => { calendar.render(); calendar.updateSize(); }, 100); 
-            renderEventList(); 
-        }
+        if(id === 'schedule') { setTimeout(() => { calendar.render(); calendar.updateSize(); }, 100); renderEventList(); }
         if(id === 'grade') { renderGrades(); updateChart('내신'); }
     }
 
@@ -159,18 +155,20 @@
         document.getElementById('mainTT').innerHTML = h;
         const saved = JSON.parse(localStorage.getItem('DSHS_TT') || '{}');
         document.querySelectorAll('.tt-select').forEach(s => { if(saved[s.dataset.id]) s.value = saved[s.dataset.id]; });
-        
-        document.getElementById('g_sub_select').innerHTML = `<option value="">과목 선택</option>` + DSHS_SUBJECTS.map(s=>`<option value="${s}">${s}</option>`).join('');
+        updateGradeSubList();
     }
     
     function saveTT() { const d = {}; document.querySelectorAll('.tt-select').forEach(s => d[s.dataset.id] = s.value); localStorage.setItem('DSHS_TT', JSON.stringify(d)); }
 
+    function updateGradeSubList() {
+        const type = document.getElementById('g_type').value;
+        const targetList = (type === '모의') ? MOCK_SUBJECTS : DSHS_SUBJECTS;
+        document.getElementById('g_sub_select').innerHTML = `<option value="">과목 선택</option>` + targetList.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+
     function renderTodo() {
         const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
-        document.getElementById('todoList').innerHTML = list.map((item, idx) => `
-            <div class="list-item"><span>✅ ${item}</span>
-            <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--point-maroon); font-weight:bold; cursor:pointer;">✕</button></div>
-        `).join('') || "<p style='text-align:center; color:var(--text-gray); font-size:0.8rem;'>계획이 없습니다.</p>";
+        document.getElementById('todoList').innerHTML = list.map((item, idx) => ` <div class="list-item"><span>✅ ${item}</span> <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--point-maroon); font-weight:bold; cursor:pointer;">✕</button></div> `).join('') || "<p style='text-align:center; color:var(--text-gray); font-size:0.8rem;'>계획이 없습니다.</p>";
     }
     function addTodo() { 
         const input = document.getElementById('todoIn'); if(!input.value.trim()) return;
@@ -194,11 +192,7 @@
     }
     function renderEventList() {
         const evs = JSON.parse(localStorage.getItem('DSHS_EVS') || '[]');
-        document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => `
-            <div class="list-item"><span style="font-size:0.85rem;"><b>${e.start}</b> ${e.title}</span>
-            <div><button class="btn-sub" onclick="editEv(${e.id})">수정</button>
-            <button class="btn-sub" style="color:var(--point-maroon);" onclick="delEv(${e.id})">삭제</button></div></div>
-        `).join('') || "일정이 없습니다.";
+        document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => ` <div class="list-item"><span style="font-size:0.85rem;"><b>${e.start}</b> ${e.title}</span> <div><button class="btn-sub" onclick="editEv(${e.id})">수정</button> <button class="btn-sub" style="color:var(--point-maroon);" onclick="delEv(${e.id})">삭제</button></div></div> `).join('') || "일정이 없습니다.";
     }
     function editEv(id) {
         const e = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]').find(i => i.id == id);
@@ -212,6 +206,7 @@
 
     function toggleGradeOptions() {
         const type = document.getElementById('g_type').value;
+        updateGradeSubList();
         document.getElementById('opt_inner').innerHTML = (type === '내신') ? `<select id="g_term"><option value="1학기">1학기</option><option value="2학기">2학기</option></select><select id="g_exam"><option value="중간고사">중간고사</option><option value="기말고사">기말고사</option></select>` : `<select id="g_exam" style="grid-column: span 2;"><option value="3월">3월</option><option value="6월">6월</option><option value="9월">9월</option><option value="11월">11월</option></select>`;
     }
     function saveGrade() {
@@ -224,7 +219,7 @@
     }
     function renderGrades() {
         const gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]');
-        document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `<div class="list-item"><span><b>${g.year} ${g.exam}</b><br>${g.sub}</span><span style="color:var(--point-gold); font-weight:800;">${g.val}${g.type==='내신'?'등급':'점'}</span><button onclick="delGrade(${g.id})" style="border:none; color:var(--point-maroon); background:none;">✕</button></div>`).join('') || "기록이 없습니다.";
+        document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `<div class="list-item"><span><b>${g.year} ${g.exam}</b><br>${g.sub}</span><span style="color:var(--point-gold); font-weight:800;">${g.val}등급</span><button onclick="delGrade(${g.id})" style="border:none; color:var(--point-maroon); background:none;">✕</button></div>`).join('') || "기록이 없습니다.";
     }
     function delGrade(id) { let gs = JSON.parse(localStorage.getItem('DSHS_GRS')||'[]'); gs = gs.filter(g=>g.id!=id); localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); }
     
@@ -234,17 +229,26 @@
         gradeChart = new Chart(document.getElementById('gradeChart'), {
             type: 'line',
             data: { labels: gs.map(g=>`${g.year.charAt(0)} ${g.exam}`), datasets: [{ label: type, data: gs.map(g=>g.val), borderColor: '#fbc02d', tension: 0.3, fill: true, backgroundColor: 'rgba(251, 192, 45, 0.1)', pointBackgroundColor: '#7b1418' }] },
-            options: { scales: { y: { reverse: (type==='내신'), grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { display: false } } }
+            options: { 
+                scales: { 
+                    y: { 
+                        reverse: true, // 1등급이 위로 가도록
+                        min: 1, 
+                        max: 5, 
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#fff', stepSize: 1 } 
+                    }, 
+                    x: { ticks: { color: '#fff' } } 
+                }, 
+                plugins: { legend: { display: false } } 
+            }
         });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         initTT(); toggleGradeOptions(); renderTodo();
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-            initialView: 'dayGridMonth', locale: 'ko', 
-            contentHeight: 'auto',
-            dayMaxEvents: true,
-            fixedWeekCount: false,
+            initialView: 'dayGridMonth', locale: 'ko', contentHeight: 'auto', dayMaxEvents: true, fixedWeekCount: false,
             headerToolbar: { left: 'prev', center: 'title', right: 'next today' },
             events: JSON.parse(localStorage.getItem('DSHS_EVS')||'[]') 
         });
