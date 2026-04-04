@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v13.1</title>
+    <title>DSHS AI Master v13.2</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -110,7 +110,7 @@
     <section id="update" class="content-section">
         <div id="adminPanel" class="card" style="display: none; border: 2px dashed var(--accent);">
             <h3>🛠️ [관리자] 업데이트 기록 게시</h3>
-            <input type="text" id="up_ver" placeholder="버전 (예: v13.1)">
+            <input type="text" id="up_ver" placeholder="버전 (예: v13.2)">
             <input type="text" id="up_title" placeholder="업데이트 제목">
             <textarea id="up_desc" placeholder="상세 내용..."></textarea>
             <button class="btn" style="background: var(--accent);" onclick="pushUpdate()">게시하기</button>
@@ -140,9 +140,17 @@
         if(id === 'update') syncUpdates();
     }
 
-    // 시간표
+    // 시간표 초기화 및 과목 설정
     function initTT() {
-        const subs = ["문학","대수","미적","영1","영2","물1","화1","생1","지1","로봇","AI","데이터","진로","자율"];
+        const subs = [
+            "문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", 
+            "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", 
+            "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", 
+            "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", 
+            "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", 
+            "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", 
+            "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학"
+        ];
         let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
         for(let i=1; i<=7; i++) {
             h += `<tr><td>${i}</td>` + Array(5).fill(0).map((_,j)=>`<td><select class="tt-select" data-id="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subs.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`).join('') + `</tr>`;
@@ -153,7 +161,7 @@
     }
     function saveTT() { const d = {}; document.querySelectorAll('.tt-select').forEach(s => d[s.dataset.id] = s.value); localStorage.setItem('DSHS_TT', JSON.stringify(d)); }
 
-    // 일정 관리
+    // 일정 관리 로직
     function saveEvent() {
         const title = document.getElementById('evTitle').value, date = document.getElementById('evDate').value, editId = document.getElementById('editEvId').value;
         if(!title || !date) return alert("내용을 입력하세요.");
@@ -188,7 +196,7 @@
     function resetEvForm() { document.getElementById('evTitle').value=""; document.getElementById('evDate').value=""; document.getElementById('editEvId').value=""; document.getElementById('evEditorTitle').innerText="📅 일정 추가/수정"; document.getElementById('cancelEvBtn').style.display="none"; }
     function refreshCalendar() { calendar.removeAllEvents(); calendar.addEventSource(JSON.parse(localStorage.getItem('DSHS_EVS')||'[]')); }
 
-    // 성적 분석
+    // 성적 분석 로직
     function toggleGradeOptions() {
         const type = document.getElementById('g_type').value;
         document.getElementById('opt_inner').innerHTML = (type === '내신') ? 
@@ -221,7 +229,7 @@
         });
     }
 
-    // 관리자 & 업데이트
+    // 관리자 모드 로직
     function checkAdmin() {
         const pw = prompt("관리자 비밀번호를 입력하세요.");
         if (pw === "090811") {
@@ -243,7 +251,7 @@
         });
     }
 
-    // 초기화
+    // 앱 초기화 실행
     document.addEventListener('DOMContentLoaded', () => {
         initTT(); toggleGradeOptions();
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', locale: 'ko', events: JSON.parse(localStorage.getItem('DSHS_EVS')||'[]') });
