@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v13.7</title>
+    <title>DSHS AI Master v13.9</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -12,10 +12,9 @@
     
     <style>
         :root { 
-            --bg-dark: #1c2635;      /* 대성고 네이비 */
-            --point-gold: #fbc02d;   /* 대성고 골드 */
-            --point-green: #386631;  /* 대성고 그린 */
-            --point-maroon: #7b1418; /* 대성고 마룬 */
+            --bg-dark: #1c2635;      
+            --point-gold: #fbc02d;   
+            --point-maroon: #7b1418; 
             --text-white: #ffffff;
             --text-gray: #cbd5e1;
             --card-bg: rgba(255, 255, 255, 0.05);
@@ -23,7 +22,6 @@
 
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-white); overflow-x: hidden; }
         
-        /* 네비게이션 */
         nav { background: rgba(28, 38, 53, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--point-gold); display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 1000; padding: 12px; }
         .nav-btn { background: none; border: none; color: white; padding: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 700; transition: 0.3s; opacity: 0.5; }
         .nav-btn.active { opacity: 1; color: var(--point-gold); transform: scale(1.1); }
@@ -33,35 +31,31 @@
         .content-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 카드 스타일 */
-        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid rgba(251, 192, 45, 0.15); overflow: hidden; }
+        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid rgba(251, 192, 45, 0.15); }
         h3 { margin: 0 0 18px 0; font-size: 1.1rem; color: var(--point-gold); font-weight: 800; display: flex; align-items: center; gap: 8px; }
 
-        /* 입력 요소 */
         input, select { width: 100%; padding: 14px; border: 1px solid rgba(251, 192, 45, 0.3); border-radius: 12px; background: rgba(0,0,0,0.2); color: white; font-size: 0.95rem; box-sizing: border-box; }
         input:focus { outline: none; border-color: var(--point-gold); }
         
         .btn { background: var(--point-gold); color: var(--bg-dark); border: none; padding: 16px; border-radius: 14px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.2s; }
         .btn:active { transform: scale(0.96); }
-        .btn-sub { background: rgba(255,255,255,0.1); color: white; padding: 8px 12px; font-size: 0.75rem; border-radius: 8px; border: none; margin-left: 4px; }
+        .btn-sub { background: rgba(255,255,255,0.1); color: white; padding: 8px 12px; font-size: 0.75rem; border-radius: 8px; border: none; margin-left: 4px; cursor: pointer; }
 
-        /* 리스트 아이템 */
         .list-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* 시간표 및 달력 튀어나옴 완벽 방지 */
         .tt-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(251, 192, 45, 0.2); }
-        table { width: 100%; border-collapse: collapse; min-width: 400px; table-layout: fixed; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; table-layout: fixed; }
         th { background: rgba(0,0,0,0.3); color: var(--point-gold); font-size: 0.75rem; padding: 10px; }
         td { border: 1px solid rgba(251, 192, 45, 0.1); padding: 2px; text-align: center; }
-        .tt-select { border: none; background: transparent; color: white; font-size: 0.8rem; text-align-last: center; padding: 8px 0; }
+        .tt-select { border: none; background: transparent; color: white; font-size: 0.75rem; text-align-last: center; padding: 8px 0; width: 100%; white-space: nowrap; text-overflow: ellipsis; }
 
-        /* 🔥 달력 고정 핵심 CSS */
-        #calendar { max-width: 100% !important; overflow: hidden; }
-        .fc { max-height: 520px !important; }
-        .fc-view-harness { height: auto !important; min-height: 380px !important; }
-        .fc-toolbar-title { font-size: 1rem !important; color: var(--point-gold) !important; }
-        .fc-daygrid-day-number { font-size: 0.75rem !important; padding: 4px !important; color: white !important; }
-        .fc .fc-button-primary { background: rgba(251, 192, 45, 0.2) !important; border: 1px solid var(--point-gold) !important; color: var(--point-gold) !important; font-weight: bold; }
+        #calendar { max-width: 100% !important; background: rgba(0,0,0,0.1); border-radius: 12px; padding: 5px; }
+        .fc-col-header-cell-cushion { color: var(--point-gold) !important; font-size: 0.8rem; }
+        .fc-daygrid-day-number { color: #fff !important; font-size: 0.8rem !important; padding: 5px !important; }
+        .fc-day-sat .fc-daygrid-day-number { color: #5dade2 !important; } 
+        .fc-day-sun .fc-daygrid-day-number { color: #ec7063 !important; } 
+        .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 800; color: white !important; }
+        .fc .fc-button-primary { background: rgba(251, 192, 45, 0.2) !important; border: 1px solid var(--point-gold) !important; color: var(--point-gold) !important; font-size: 0.7rem; font-weight: bold; }
         .fc .fc-button-active { background: var(--point-gold) !important; color: var(--bg-dark) !important; }
 
         .chart-container { height: 250px; width: 100%; }
@@ -71,21 +65,21 @@
 
 <nav>
     <button class="nav-btn active" onclick="showTab('home', this)">🏡 HOME</button>
-    <button class="nav-btn" onclick="showTab('schedule', this)">📅 SCH</button>
-    <button class="nav-btn" onclick="showTab('grade', this)">📊 GRS</button>
+    <button class="nav-btn" onclick="showTab('schedule', this)">📅 CALENDAR</button>
+    <button class="nav-btn" onclick="showTab('grade', this)">📊 GRADES</button>
 </nav>
 
 <div class="container">
     <section id="home" class="content-section active">
         <div class="card">
-            <h3>📅 WEEKLY TIMETABLE</h3>
+            <h3>📅 주간 시간표</h3>
             <div class="tt-wrapper"><table id="mainTT"></table></div>
         </div>
         <div class="card">
             <h3>🔔 TO-DO LIST</h3>
             <div style="display:flex; gap:8px; margin-bottom: 15px;">
                 <input type="text" id="todoIn" placeholder="할 일을 입력하세요...">
-                <button class="btn" style="width:70px; padding:0;" onclick="addTodo()">ADD</button>
+                <button class="btn" style="width:70px; padding:0;" onclick="addTodo()">추가</button>
             </div>
             <div id="todoList"></div>
         </div>
@@ -93,47 +87,47 @@
 
     <section id="schedule" class="content-section">
         <div class="card">
-            <h3 id="evEditorTitle">📍 ADD EVENT</h3>
+            <h3 id="evEditorTitle">📍 일정 추가/수정</h3>
             <input type="hidden" id="editEvId">
             <input type="text" id="evTitle" placeholder="일정 제목" style="margin-bottom:8px;">
             <input type="date" id="evDate" style="margin-bottom:12px;">
             <div style="display:flex; gap:8px;">
-                <button class="btn" onclick="saveEvent()">SAVE</button>
-                <button class="btn btn-sub" id="cancelEvBtn" style="display:none; width:80px;" onclick="resetEvForm()">CANCEL</button>
+                <button class="btn" onclick="saveEvent()">저장하기</button>
+                <button class="btn btn-sub" id="cancelEvBtn" style="display:none; width:80px;" onclick="resetEvForm()">취소</button>
             </div>
         </div>
-        <div class="card" style="padding: 12px;">
+        <div class="card">
             <div id="calendar"></div>
         </div>
         <div class="card">
-            <h3>📂 SCHEDULE LIST</h3>
+            <h3>📂 일정 목록</h3>
             <div id="eventList"></div>
         </div>
     </section>
 
     <section id="grade" class="content-section">
         <div class="card">
-            <h3>📈 ANALYSIS</h3>
+            <h3>📈 성적 분석</h3>
             <div style="display:flex; gap:8px; margin-bottom:15px;">
-                <button class="btn btn-sub" style="flex:1;" onclick="updateChart('내신')">내신 등급</button>
+                <button class="btn btn-sub" style="flex:1;" onclick="updateChart('내신')">내신</button>
                 <button class="btn btn-sub" style="flex:1;" onclick="updateChart('모의')">모의고사</button>
             </div>
             <div class="chart-container"><canvas id="gradeChart"></canvas></div>
         </div>
         <div class="card">
-            <h3>📝 RECORD</h3>
+            <h3>📝 성적 기록</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;">
                 <select id="g_type" onchange="toggleGradeOptions()"><option value="내신">내신</option><option value="모의">모의고사</option></select>
                 <select id="g_year"><option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option></select>
             </div>
             <div id="opt_inner" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;"></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;">
-                <input type="text" id="g_sub" placeholder="과목명">
+                <select id="g_sub_select"></select>
                 <input type="number" id="g_val" placeholder="등급/점수" step="0.1">
             </div>
-            <button class="btn" onclick="saveGrade()">SAVE DATA</button>
+            <button class="btn" onclick="saveGrade()">기록하기</button>
         </div>
-        <div class="card"><h3>📂 HISTORY</h3><div id="gradeHistory"></div></div>
+        <div class="card"><h3>📂 히스토리</h3><div id="gradeHistory"></div></div>
     </section>
 </div>
 
@@ -143,31 +137,34 @@
     const db = firebase.database();
     let calendar, gradeChart;
 
+    // 요청하신 과목 리스트 (그대로 적용)
+    const DSHS_SUBJECTS = ["문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학", "자율", "진로", "스포츠생활1", "스포츠생활2", "동아리"];
+
     function showTab(id, b) {
         document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
         document.getElementById(id).classList.add('active'); b.classList.add('active');
         if(id === 'schedule') { 
-            setTimeout(() => { calendar.updateSize(); calendar.render(); }, 50); 
+            setTimeout(() => { calendar.render(); calendar.updateSize(); }, 100); 
             renderEventList(); 
         }
         if(id === 'grade') { renderGrades(); updateChart('내신'); }
     }
 
-    // 시간표
     function initTT() {
-        const subs = ["문학", "대수", "미적분1", "영어1", "영어발표", "한지", "세계사", "경제", "윤리", "물리", "화학", "생명", "지학", "로봇", "AI기초", "공설", "데이터"];
         let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
         for(let i=1; i<=7; i++) {
-            h += `<tr><td style="background:rgba(0,0,0,0.2); font-weight:bold; color:var(--text-gray);">${i}</td>` + Array(5).fill(0).map((_,j)=>`<td><select class="tt-select" data-id="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subs.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`).join('') + `</tr>`;
+            h += `<tr><td style="background:rgba(0,0,0,0.2); font-weight:bold; color:var(--text-gray);">${i}</td>` + Array(5).fill(0).map((_,j)=>`<td><select class="tt-select" data-id="${i}-${j}" onchange="saveTT()"><option value="">-</option>${DSHS_SUBJECTS.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`).join('') + `</tr>`;
         }
         document.getElementById('mainTT').innerHTML = h;
         const saved = JSON.parse(localStorage.getItem('DSHS_TT') || '{}');
         document.querySelectorAll('.tt-select').forEach(s => { if(saved[s.dataset.id]) s.value = saved[s.dataset.id]; });
+        
+        document.getElementById('g_sub_select').innerHTML = `<option value="">과목 선택</option>` + DSHS_SUBJECTS.map(s=>`<option value="${s}">${s}</option>`).join('');
     }
+    
     function saveTT() { const d = {}; document.querySelectorAll('.tt-select').forEach(s => d[s.dataset.id] = s.value); localStorage.setItem('DSHS_TT', JSON.stringify(d)); }
 
-    // 할 일
     function renderTodo() {
         const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
         document.getElementById('todoList').innerHTML = list.map((item, idx) => `
@@ -186,7 +183,6 @@
         list.splice(idx, 1); localStorage.setItem('DSHS_TODO', JSON.stringify(list)); renderTodo(); 
     }
 
-    // 일정 및 달력
     function saveEvent() {
         const title = document.getElementById('evTitle').value, date = document.getElementById('evDate').value, editId = document.getElementById('editEvId').value;
         if(!title || !date) return alert("내용을 입력하세요.");
@@ -200,28 +196,29 @@
         const evs = JSON.parse(localStorage.getItem('DSHS_EVS') || '[]');
         document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => `
             <div class="list-item"><span style="font-size:0.85rem;"><b>${e.start}</b> ${e.title}</span>
-            <div><button class="btn-sub" onclick="editEv(${e.id})">Edit</button>
-            <button class="btn-sub" style="color:var(--point-maroon);" onclick="delEv(${e.id})">Del</button></div></div>
+            <div><button class="btn-sub" onclick="editEv(${e.id})">수정</button>
+            <button class="btn-sub" style="color:var(--point-maroon);" onclick="delEv(${e.id})">삭제</button></div></div>
         `).join('') || "일정이 없습니다.";
     }
     function editEv(id) {
         const e = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]').find(i => i.id == id);
         document.getElementById('evTitle').value = e.title; document.getElementById('evDate').value = e.start;
-        document.getElementById('editEvId').value = e.id; document.getElementById('evEditorTitle').innerText = "📝 EDIT EVENT";
+        document.getElementById('editEvId').value = e.id; document.getElementById('evEditorTitle').innerText = "📝 일정 수정";
         document.getElementById('cancelEvBtn').style.display = "inline-block";
     }
     function delEv(id) { if(confirm("삭제하시겠습니까?")) { let evs = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]'); evs = evs.filter(e=>e.id!=id); localStorage.setItem('DSHS_EVS', JSON.stringify(evs)); refreshCalendar(); renderEventList(); } }
-    function resetEvForm() { document.getElementById('evTitle').value=""; document.getElementById('evDate').value=""; document.getElementById('editEvId').value=""; document.getElementById('evEditorTitle').innerText="📍 ADD EVENT"; document.getElementById('cancelEvBtn').style.display="none"; }
+    function resetEvForm() { document.getElementById('evTitle').value=""; document.getElementById('evDate').value=""; document.getElementById('editEvId').value=""; document.getElementById('evEditorTitle').innerText="📍 일정 추가/수정"; document.getElementById('cancelEvBtn').style.display="none"; }
     function refreshCalendar() { calendar.removeAllEvents(); calendar.addEventSource(JSON.parse(localStorage.getItem('DSHS_EVS')||'[]')); }
 
-    // 성적
     function toggleGradeOptions() {
         const type = document.getElementById('g_type').value;
         document.getElementById('opt_inner').innerHTML = (type === '내신') ? `<select id="g_term"><option value="1학기">1학기</option><option value="2학기">2학기</option></select><select id="g_exam"><option value="중간고사">중간고사</option><option value="기말고사">기말고사</option></select>` : `<select id="g_exam" style="grid-column: span 2;"><option value="3월">3월</option><option value="6월">6월</option><option value="9월">9월</option><option value="11월">11월</option></select>`;
     }
     function saveGrade() {
-        const g = { id: Date.now(), type: document.getElementById('g_type').value, year: document.getElementById('g_year').value, term: document.getElementById('g_term')?.value || '', exam: document.getElementById('g_exam').value, sub: document.getElementById('g_sub').value, val: parseFloat(document.getElementById('g_val').value), date: new Date().getTime() };
-        if(!g.sub || isNaN(g.val)) return alert("정보를 모두 입력하세요.");
+        const sub = document.getElementById('g_sub_select').value;
+        const val = parseFloat(document.getElementById('g_val').value);
+        if(!sub || isNaN(val)) return alert("정보를 모두 입력하세요.");
+        const g = { id: Date.now(), type: document.getElementById('g_type').value, year: document.getElementById('g_year').value, term: document.getElementById('g_term')?.value || '', exam: document.getElementById('g_exam').value, sub: sub, val: val, date: new Date().getTime() };
         let gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]'); gs.push(g);
         localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); updateChart(g.type);
     }
@@ -230,20 +227,24 @@
         document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `<div class="list-item"><span><b>${g.year} ${g.exam}</b><br>${g.sub}</span><span style="color:var(--point-gold); font-weight:800;">${g.val}${g.type==='내신'?'등급':'점'}</span><button onclick="delGrade(${g.id})" style="border:none; color:var(--point-maroon); background:none;">✕</button></div>`).join('') || "기록이 없습니다.";
     }
     function delGrade(id) { let gs = JSON.parse(localStorage.getItem('DSHS_GRS')||'[]'); gs = gs.filter(g=>g.id!=id); localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); }
+    
     function updateChart(type) {
         const gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]').filter(g => g.type === type).sort((a,b)=>a.date-b.date);
         if(gradeChart) gradeChart.destroy();
         gradeChart = new Chart(document.getElementById('gradeChart'), {
             type: 'line',
             data: { labels: gs.map(g=>`${g.year.charAt(0)} ${g.exam}`), datasets: [{ label: type, data: gs.map(g=>g.val), borderColor: '#fbc02d', tension: 0.3, fill: true, backgroundColor: 'rgba(251, 192, 45, 0.1)', pointBackgroundColor: '#7b1418' }] },
-            options: { scales: { y: { reverse: (type==='내신'), grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+            options: { scales: { y: { reverse: (type==='내신'), grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { display: false } } }
         });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         initTT(); toggleGradeOptions(); renderTodo();
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-            initialView: 'dayGridMonth', locale: 'ko', contentHeight: 'auto', aspectRatio: 1.2,
+            initialView: 'dayGridMonth', locale: 'ko', 
+            contentHeight: 'auto',
+            dayMaxEvents: true,
+            fixedWeekCount: false,
             headerToolbar: { left: 'prev', center: 'title', right: 'next today' },
             events: JSON.parse(localStorage.getItem('DSHS_EVS')||'[]') 
         });
