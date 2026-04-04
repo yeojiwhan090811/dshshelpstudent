@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v13.2</title>
+    <title>DSHS AI Master v13.3</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -62,7 +62,10 @@
         </div>
         <div class="card">
             <h3>🔔 To-Do List</h3>
-            <div style="display:flex; gap:5px;"><input type="text" id="todoIn" placeholder="과제/수행평가..."><button class="btn" style="width:60px;" onclick="addTodo()">+</button></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="todoIn" placeholder="과제/수행평가 입력...">
+                <button class="btn" style="width:60px;" onclick="addTodo()">+</button>
+            </div>
             <div id="todoList" style="margin-top:10px;"></div>
         </div>
     </section>
@@ -110,17 +113,15 @@
     <section id="update" class="content-section">
         <div id="adminPanel" class="card" style="display: none; border: 2px dashed var(--accent);">
             <h3>🛠️ [관리자] 업데이트 기록 게시</h3>
-            <input type="text" id="up_ver" placeholder="버전 (예: v13.2)">
+            <input type="text" id="up_ver" placeholder="버전 (예: v13.3)">
             <input type="text" id="up_title" placeholder="업데이트 제목">
             <textarea id="up_desc" placeholder="상세 내용..."></textarea>
             <button class="btn" style="background: var(--accent);" onclick="pushUpdate()">게시하기</button>
             <button class="btn-sub" style="margin-top:10px; width:100%;" onclick="hideAdmin()">관리자 모드 종료</button>
         </div>
-
         <div style="text-align: right; margin-bottom: 10px;">
             <span onclick="checkAdmin()" style="font-size: 0.5rem; color: var(--bg); cursor: default;">.</span>
         </div>
-
         <div id="updateContainer"></div>
     </section>
 </div>
@@ -140,17 +141,9 @@
         if(id === 'update') syncUpdates();
     }
 
-    // 시간표 초기화 및 과목 설정
+    // 시간표 (과목 리스트 유지)
     function initTT() {
-        const subs = [
-            "문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", 
-            "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", 
-            "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", 
-            "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", 
-            "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", 
-            "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", 
-            "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학", "자율", "진로", "스포츠생활1", "스포츠생활2"
-        ];
+        const subs = ["문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학"];
         let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
         for(let i=1; i<=7; i++) {
             h += `<tr><td>${i}</td>` + Array(5).fill(0).map((_,j)=>`<td><select class="tt-select" data-id="${i}-${j}" onchange="saveTT()"><option value="">-</option>${subs.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`).join('') + `</tr>`;
@@ -161,7 +154,47 @@
     }
     function saveTT() { const d = {}; document.querySelectorAll('.tt-select').forEach(s => d[s.dataset.id] = s.value); localStorage.setItem('DSHS_TT', JSON.stringify(d)); }
 
-    // 일정 관리 로직
+    // --- To-Do 리스트 개선 (추가, 삭제, 수정) ---
+    function renderTodo() {
+        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
+        const container = document.getElementById('todoList');
+        container.innerHTML = list.map((item, idx) => `
+            <div class="list-item">
+                <span style="cursor:pointer; flex:1;" onclick="editTodo(${idx})">✅ ${item}</span>
+                <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--danger); font-weight:bold; cursor:pointer; padding:5px;">✕</button>
+            </div>
+        `).join('') || "<div style='text-align:center; color:gray; font-size:0.8rem;'>할 일이 없습니다.</div>";
+    }
+
+    function addTodo() {
+        const input = document.getElementById('todoIn');
+        if(!input.value.trim()) return;
+        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
+        list.push(input.value.trim());
+        localStorage.setItem('DSHS_TODO', JSON.stringify(list));
+        input.value = "";
+        renderTodo();
+    }
+
+    function deleteTodo(idx) {
+        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
+        list.splice(idx, 1);
+        localStorage.setItem('DSHS_TODO', JSON.stringify(list));
+        renderTodo();
+    }
+
+    function editTodo(idx) {
+        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
+        const newVal = prompt("수정할 내용을 입력하세요:", list[idx]);
+        if(newVal && newVal.trim() !== "") {
+            list[idx] = newVal.trim();
+            localStorage.setItem('DSHS_TODO', JSON.stringify(list));
+            renderTodo();
+        }
+    }
+    // ------------------------------------------
+
+    // 일정 관리
     function saveEvent() {
         const title = document.getElementById('evTitle').value, date = document.getElementById('evDate').value, editId = document.getElementById('editEvId').value;
         if(!title || !date) return alert("내용을 입력하세요.");
@@ -177,14 +210,7 @@
     }
     function renderEventList() {
         const evs = JSON.parse(localStorage.getItem('DSHS_EVS') || '[]');
-        document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => `
-            <div class="list-item">
-                <span><b>${e.start}</b><br>${e.title}</span>
-                <div>
-                    <button class="btn-sub" onclick="editEv(${e.id})">수정</button>
-                    <button class="btn-sub" style="background:var(--danger);" onclick="delEv(${e.id})">삭제</button>
-                </div>
-            </div>`).join('') || "일정이 없습니다.";
+        document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => `<div class="list-item"><span><b>${e.start}</b><br>${e.title}</span><div><button class="btn-sub" onclick="editEv(${e.id})">수정</button><button class="btn-sub" style="background:var(--danger);" onclick="delEv(${e.id})">삭제</button></div></div>`).join('') || "일정이 없습니다.";
     }
     function editEv(id) {
         const e = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]').find(i => i.id == id);
@@ -196,12 +222,10 @@
     function resetEvForm() { document.getElementById('evTitle').value=""; document.getElementById('evDate').value=""; document.getElementById('editEvId').value=""; document.getElementById('evEditorTitle').innerText="📅 일정 추가/수정"; document.getElementById('cancelEvBtn').style.display="none"; }
     function refreshCalendar() { calendar.removeAllEvents(); calendar.addEventSource(JSON.parse(localStorage.getItem('DSHS_EVS')||'[]')); }
 
-    // 성적 분석 로직
+    // 성적 분석
     function toggleGradeOptions() {
         const type = document.getElementById('g_type').value;
-        document.getElementById('opt_inner').innerHTML = (type === '내신') ? 
-            `<select id="g_term"><option value="1학기">1학기</option><option value="2학기">2학기</option></select><select id="g_exam"><option value="중간고사">중간고사</option><option value="기말고사">기말고사</option></select>` :
-            `<select id="g_exam" style="grid-column: span 2;"><option value="3월 모의">3월</option><option value="6월 모의">6월</option><option value="9월 모의">9월</option><option value="10월 모의">10월</option></select>`;
+        document.getElementById('opt_inner').innerHTML = (type === '내신') ? `<select id="g_term"><option value="1학기">1학기</option><option value="2학기">2학기</option></select><select id="g_exam"><option value="중간고사">중간고사</option><option value="기말고사">기말고사</option></select>` : `<select id="g_exam" style="grid-column: span 2;"><option value="3월 모의">3월</option><option value="6월 모의">6월</option><option value="9월 모의">9월</option><option value="10월 모의">10월</option></select>`;
     }
     function saveGrade() {
         const g = { id: Date.now(), type: document.getElementById('g_type').value, year: document.getElementById('g_year').value, term: document.getElementById('g_term')?.value || '', exam: document.getElementById('g_exam').value, sub: document.getElementById('g_sub').value, val: parseFloat(document.getElementById('g_val').value), date: new Date().getTime() };
@@ -211,12 +235,7 @@
     }
     function renderGrades() {
         const gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]');
-        document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `
-            <div class="list-item">
-                <span><b>${g.year} ${g.term} ${g.exam}</b><br>${g.sub}</span>
-                <span style="color:var(--primary); font-weight:bold;">${g.val}${g.type==='내신'?'등급':'점'}</span>
-                <button onclick="delGrade(${g.id})" style="border:none; color:var(--danger); background:none;">✕</button>
-            </div>`).join('') || "기록이 없습니다.";
+        document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `<div class="list-item"><span><b>${g.year} ${g.term} ${g.exam}</b><br>${g.sub}</span><span style="color:var(--primary); font-weight:bold;">${g.val}${g.type==='내신'?'등급':'점'}</span><button onclick="delGrade(${g.id})" style="border:none; color:var(--danger); background:none;">✕</button></div>`).join('') || "기록이 없습니다.";
     }
     function delGrade(id) { let gs = JSON.parse(localStorage.getItem('DSHS_GRS')||'[]'); gs = gs.filter(g=>g.id!=id); localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); }
     function updateChart(type) {
@@ -229,13 +248,10 @@
         });
     }
 
-    // 관리자 모드 로직
+    // 관리자 모드
     function checkAdmin() {
         const pw = prompt("관리자 비밀번호를 입력하세요.");
-        if (pw === "090811") {
-            document.getElementById('adminPanel').style.display = "block";
-            alert("관리자 모드가 활성화되었습니다.");
-        } else { alert("권한이 없습니다."); }
+        if (pw === "090811") { document.getElementById('adminPanel').style.display = "block"; alert("관리자 모드 활성화"); } else { alert("권한 없음"); }
     }
     function hideAdmin() { document.getElementById('adminPanel').style.display = "none"; }
     function pushUpdate() {
@@ -251,15 +267,15 @@
         });
     }
 
-    // 앱 초기화 실행
     document.addEventListener('DOMContentLoaded', () => {
         initTT(); toggleGradeOptions();
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', locale: 'ko', events: JSON.parse(localStorage.getItem('DSHS_EVS')||'[]') });
-        const savedTodo = JSON.parse(localStorage.getItem('DSHS_TODO')||'[]');
-        document.getElementById('todoList').innerHTML = savedTodo.map(t=>`<div class="list-item">✅ ${t}</div>`).join('');
+        renderTodo(); // To-Do 렌더링 호출
         syncUpdates();
     });
-    function addTodo() { const v = document.getElementById('todoIn').value; if(!v) return; const l = JSON.parse(localStorage.getItem('DSHS_TODO')||'[]'); l.push(v); localStorage.setItem('DSHS_TODO', JSON.stringify(l)); location.reload(); }
+
+    // 엔터키로 할 일 추가 지원
+    document.getElementById('todoIn').addEventListener('keypress', (e) => { if(e.key === 'Enter') addTodo(); });
 </script>
 </body>
 </html>
