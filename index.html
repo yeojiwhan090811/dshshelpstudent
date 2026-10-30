@@ -1,259 +1,812 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSHS AI Master v14.0</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        :root { 
-            --bg-dark: #1c2635;      
-            --point-gold: #fbc02d;   
-            --point-maroon: #7b1418; 
-            --text-white: #ffffff;
-            --text-gray: #cbd5e1;
-            --card-bg: rgba(255, 255, 255, 0.05);
-        }
-
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-white); overflow-x: hidden; }
-        
-        nav { background: rgba(28, 38, 53, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--point-gold); display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 1000; padding: 12px; }
-        .nav-btn { background: none; border: none; color: white; padding: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 700; transition: 0.3s; opacity: 0.5; }
-        .nav-btn.active { opacity: 1; color: var(--point-gold); transform: scale(1.1); }
-
-        .container { max-width: 800px; margin: 20px auto; padding: 0 16px 100px; }
-        .content-section { display: none; animation: fadeIn 0.4s ease-out; }
-        .content-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--card-bg); border-radius: 20px; padding: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid rgba(251, 192, 45, 0.15); }
-        h3 { margin: 0 0 18px 0; font-size: 1.1rem; color: var(--point-gold); font-weight: 800; display: flex; align-items: center; gap: 8px; }
-
-        input, select { width: 100%; padding: 14px; border: 1px solid rgba(251, 192, 45, 0.3); border-radius: 12px; background: rgba(0,0,0,0.2); color: white; font-size: 0.95rem; box-sizing: border-box; }
-        input:focus { outline: none; border-color: var(--point-gold); }
-        
-        .btn { background: var(--point-gold); color: var(--bg-dark); border: none; padding: 16px; border-radius: 14px; cursor: pointer; font-weight: 800; width: 100%; transition: 0.2s; }
-        .btn:active { transform: scale(0.96); }
-        .btn-sub { background: rgba(255,255,255,0.1); color: white; padding: 8px 12px; font-size: 0.75rem; border-radius: 8px; border: none; margin-left: 4px; cursor: pointer; }
-
-        .list-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-
-        .tt-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(251, 192, 45, 0.2); }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; table-layout: fixed; }
-        th { background: rgba(0,0,0,0.3); color: var(--point-gold); font-size: 0.75rem; padding: 10px; }
-        td { border: 1px solid rgba(251, 192, 45, 0.1); padding: 2px; text-align: center; }
-        .tt-select { border: none; background: transparent; color: white; font-size: 0.75rem; text-align-last: center; padding: 8px 0; width: 100%; white-space: nowrap; text-overflow: ellipsis; }
-
-        #calendar { max-width: 100% !important; background: rgba(0,0,0,0.1); border-radius: 12px; padding: 5px; }
-        .fc-col-header-cell-cushion { color: var(--point-gold) !important; font-size: 0.8rem; }
-        .fc-daygrid-day-number { color: #fff !important; font-size: 0.8rem !important; padding: 5px !important; }
-        .fc-day-sat .fc-daygrid-day-number { color: #5dade2 !important; } 
-        .fc-day-sun .fc-daygrid-day-number { color: #ec7063 !important; } 
-
-        .chart-container { height: 250px; width: 100%; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로켓 연료 최적 선택 | 화학 탐구 발표</title>
+<style>
+:root {
+  --bg: #081426;
+  --panel: #12243c;
+  --text: #edf5ff;
+  --muted: #aabed6;
+  --blue: #56a7ff;
+  --green: #3ed6b0;
+  --orange: #ffb45b;
+  --line: #2a405d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 90% 5%, #173c60, var(--bg) 48%);
+  font-family: Pretendard, 'Noto Sans KR', system-ui, sans-serif;
+  color: var(--text);
+}
+button, input { font: inherit; }
+header {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  background: #081426e8;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px max(3vw, 18px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+header strong { font-size: 15px; }
+header small { color: var(--muted); }
+button {
+  background: #1a3554;
+  color: white;
+  border: 1px solid #426484;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+button:hover, button.active { background: #27629b; }
+main { max-width: 1230px; margin: auto; padding: 24px; }
+.slide {
+  display: none;
+  min-height: calc(100vh - 175px);
+  animation: fade .18s ease;
+}
+.slide.active { display: block; }
+@keyframes fade {
+  from { opacity: .4; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+h1 {
+  font-size: clamp(34px, 5vw, 68px);
+  line-height: 1.15;
+  margin: 12px 0 24px;
+}
+h2 {
+  font-size: clamp(27px, 3vw, 42px);
+  margin: 14px 0 23px;
+}
+.eyebrow {
+  color: var(--green);
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+.lead {
+  font-size: clamp(18px, 2vw, 25px);
+  line-height: 1.7;
+  color: #dceafa;
+}
+.muted { color: var(--muted); }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: linear-gradient(140deg, #152c49, #0d2036);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  padding: 22px;
+}
+.card h3 { margin: 0 0 12px; font-size: 21px; }
+.card p {
+  line-height: 1.75;
+  margin: 9px 0;
+  color: #d7e5f5;
+}
+.big { font-size: 33px; font-weight: 850; }
+.blue { color: var(--blue); }
+.green { color: var(--green); }
+.orange { color: var(--orange); }
+.callout {
+  padding: 20px 23px;
+  border-left: 4px solid var(--green);
+  background: #102c43;
+  border-radius: 0 14px 14px 0;
+  margin-top: 20px;
+  font-size: 19px;
+  line-height: 1.65;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #11263f;
+  border-radius: 14px;
+  overflow: hidden;
+}
+th, td {
+  padding: 14px;
+  text-align: left;
+  border-bottom: 1px solid #2e4360;
+  line-height: 1.55;
+}
+th { background: #214265; }
+td:first-child { font-weight: 700; }
+tr:last-child td { border-bottom: none; }
+.table-scroll { overflow-x: auto; }
+ul { line-height: 1.9; padding-left: 25px; }
+footer {
+  position: sticky;
+  bottom: 0;
+  background: #081426ef;
+  border-top: 1px solid var(--line);
+  padding: 12px 3vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.progress { color: var(--muted); }
+.actions { display: flex; gap: 8px; }
+.formula {
+  font-size: clamp(19px, 3vw, 29px);
+  border: 1px solid #466484;
+  border-radius: 14px;
+  background: #081a2e;
+  padding: 21px;
+  line-height: 1.8;
+  text-align: center;
+  overflow: auto;
+}
+.bar-chart { display: grid; gap: 16px; margin-top: 16px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 78px;
+  align-items: center;
+  gap: 12px;
+}
+.track {
+  height: 23px;
+  background: #263b53;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  border-radius: 7px;
+  transition: width .25s;
+}
+.panel-title { font-size: 19px; font-weight: 800; margin: 0 0 14px; }
+.sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+  gap: 12px;
+}
+.sliderbox { padding: 14px; background: #142a43; border-radius: 12px; }
+.sliderbox label {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+  gap: 12px;
+}
+.sliderbox input { width: 100%; accent-color: var(--green); margin-top: 14px; }
+.pill { font-size: 13px; color: var(--muted); }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.result { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.result .card { text-align: center; padding: 16px; }
+.result .big { font-size: clamp(24px, 3vw, 37px); }
+.note { color: #a5bbd4; font-size: 13px; line-height: 1.7; }
+.question {
+  font-size: clamp(20px, 3vw, 34px);
+  font-weight: 760;
+  line-height: 1.55;
+}
+.sources a { color: #8cc7ff; overflow-wrap: anywhere; }
+@media(max-width:650px) {
+  main { padding: 14px; }
+  .bar-row { grid-template-columns: 65px 1fr 66px; font-size: 13px; }
+  .result { grid-template-columns: 1fr; }
+  th, td { padding: 9px; min-width: 110px; }
+  header small { display: none; }
+}
+@media print {
+  header, footer, .presets, .sliders { display: none !important; }
+  .slide { display: block !important; page-break-after: always; min-height: auto; }
+  body { background: white; color: black; }
+  .card, .callout, .formula {
+    color: black;
+    background: #f2f5f9;
+    border: 1px solid #ccc;
+  }
+  h1, h2, h3, .lead, .card p, .muted { color: black; }
+  main { max-width: 100%; }
+}
+</style>
 </head>
 <body>
 
-<nav>
-    <button class="nav-btn active" onclick="showTab('home', this)">🏡 HOME</button>
-    <button class="nav-btn" onclick="showTab('schedule', this)">📅 CALENDAR</button>
-    <button class="nav-btn" onclick="showTab('grade', this)">📊 GRADES</button>
-</nav>
+<header>
+  <div>
+    <strong>🚀 가장 좋은 로켓 연료는 무엇일까?</strong>
+    <small>화학 × 기계공학 융합 탐구</small>
+  </div>
+  <div>
+    <button onclick="showSlide(11)">⚖️ 실시간 평가</button>
+    <button onclick="document.documentElement.requestFullscreen?.()">⛶ 전체화면</button>
+  </div>
+</header>
 
-<div class="container">
-    <section id="home" class="content-section active">
-        <div class="card">
-            <h3>📅 주간 시간표</h3>
-            <div class="tt-wrapper"><table id="mainTT"></table></div>
-        </div>
-        <div class="card">
-            <h3>🔔 TO-DO LIST</h3>
-            <div style="display:flex; gap:8px; margin-bottom: 15px;">
-                <input type="text" id="todoIn" placeholder="할 일을 입력하세요...">
-                <button class="btn" style="width:70px; padding:0;" onclick="addTodo()">추가</button>
-            </div>
-            <div id="todoList"></div>
-        </div>
-    </section>
+<main>
 
-    <section id="schedule" class="content-section">
-        <div class="card">
-            <h3 id="evEditorTitle">📍 일정 추가/수정</h3>
-            <input type="hidden" id="editEvId">
-            <input type="text" id="evTitle" placeholder="일정 제목" style="margin-bottom:8px;">
-            <input type="date" id="evDate" style="margin-bottom:12px;">
-            <div style="display:flex; gap:8px;">
-                <button class="btn" onclick="saveEvent()">저장하기</button>
-                <button class="btn btn-sub" id="cancelEvBtn" style="display:none; width:80px;" onclick="resetEvForm()">취소</button>
-            </div>
-        </div>
-        <div class="card">
-            <div id="calendar"></div>
-        </div>
-        <div class="card">
-            <h3>📂 일정 목록</h3>
-            <div id="eventList"></div>
-        </div>
-    </section>
+<!-- 슬라이드 1 -->
+<section class="slide active">
+  <div class="eyebrow">STEP 1 · 기계 분야 화학 탐구</div>
+  <h1>가장 많은 에너지를 내는 연료가<br>
+    <span class="green">정말 가장 좋은 연료일까?</span>
+  </h1>
+  <p class="lead">
+    연소 엔탈피에서 출발하여 에너지 밀도·저장 조건·탄소 침착·경제성까지 비교하고,
+    상황별 가중치로 최적 연료를 선정한다.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <h3 class="blue">액체수소 · LH₂</h3>
+      <p>질량당 에너지와 추진 효율의 강점</p>
+    </div>
+    <div class="card">
+      <h3 class="green">액체메탄 · LCH₄</h3>
+      <p>성능과 저장성 사이의 균형</p>
+    </div>
+    <div class="card">
+      <h3 class="orange">케로신 · RP-1</h3>
+      <p>높은 밀도와 상대적으로 쉬운 저장</p>
+    </div>
+  </div>
+</section>
 
-    <section id="grade" class="content-section">
-        <div class="card">
-            <h3>📈 성적 분석</h3>
-            <div style="display:flex; gap:8px; margin-bottom:15px;">
-                <button class="btn btn-sub" style="flex:1;" onclick="updateChart('내신')">내신</button>
-                <button class="btn btn-sub" style="flex:1;" onclick="updateChart('모의')">모의고사</button>
-            </div>
-            <div class="chart-container"><canvas id="gradeChart"></canvas></div>
-        </div>
-        <div class="card">
-            <h3>📝 성적 기록</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;">
-                <select id="g_type" onchange="toggleGradeOptions()"><option value="내신">내신</option><option value="모의">모의고사</option></select>
-                <select id="g_year"><option value="1학년">1학년</option><option value="2학년">2학년</option><option value="3학년">3학년</option></select>
-            </div>
-            <div id="opt_inner" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;"></div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 10px;">
-                <select id="g_sub_select"></select>
-                <input type="number" id="g_val" placeholder="등급 (1~5)" min="1" max="5" step="1">
-            </div>
-            <button class="btn" onclick="saveGrade()">기록하기</button>
-        </div>
-        <div class="card"><h3>📂 히스토리</h3><div id="gradeHistory"></div></div>
-    </section>
-</div>
+<!-- 슬라이드 2 -->
+<section class="slide">
+  <div class="eyebrow">STEP 1 · 탐구 질문</div>
+  <h2>우리 모둠의 질문과 목표</h2>
+  <div class="card">
+    <p class="question">
+      “1 MJ의 에너지가 필요할 때, 가장 높은 연소 에너지를 내는 연료가 항상 최선일까?”
+    </p>
+    <p>
+      원래 문제는 수소·에탄올·옥테인의 비교였으며,
+      이를 실제 로켓에 쓰이는 액체수소·액체메탄·케로신으로 확장하였다.
+    </p>
+  </div>
+  <div class="callout">
+    최종 목표: 단 하나의 '좋은 연료'가 아닌,
+    <b>사용 목적에 따라 달라지는 연료 선택 기준</b>을 만들고 가중평가 모델로 표현하기
+  </div>
+</section>
+
+<!-- 슬라이드 3 -->
+<section class="slide">
+  <div class="eyebrow">STEP 1 · 역할 분담</div>
+  <h2>모둠의 연구 역할</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🔎 자료 탐색</h3>
+      <p>박희찬, 이주환</p>
+    </div>
+    <div class="card">
+      <h3>📊 계산·자료 분석</h3>
+      <p>이선재, 홍정우</p>
+    </div>
+    <div class="card">
+      <h3>⚗️ 화학 개념 확인</h3>
+      <p>최지운</p>
+    </div>
+    <div class="card">
+      <h3>🎤 기록·발표 준비</h3>
+      <p>여지환</p>
+    </div>
+  </div>
+</section>
+
+<!-- 슬라이드 4 -->
+<section class="slide">
+  <div class="eyebrow">STEP 2 · 핵심 화학 개념</div>
+  <h2>탐구의 화학적 근거</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>① 엔탈피</h3>
+      <p>
+        연료 연소 시 방출되는 에너지의 크기.
+        몰당 연소 엔탈피를 몰질량으로 나눠 질량당 에너지를 구한다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>② 활성화에너지</h3>
+      <p>
+        반응이 진행되기 위해 넘어야 하는 에너지 장벽.
+        점화 및 연소 반응속도 해석과 관련된다.
+        자연발화온도·점화에너지와 동일한 값은 아니다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>③ 상변화</h3>
+      <p>
+        온도·압력에 따라 물질의 상태가 달라진다.
+        액체수소와 메탄은 극저온 저장 및 기화 손실 관리가 중요하다.
+      </p>
+    </div>
+  </div>
+  <div class="callout">
+    탐구 전 예상: 에너지 효율뿐 아니라 연료의 저장 및 수송 편리성도
+    좋은 연료의 중요한 기준일 것이다.
+  </div>
+</section>
+
+<!-- 슬라이드 5 -->
+<section class="slide">
+  <div class="eyebrow">STEP 3 · 탐구 방법</div>
+  <h2>우리는 무엇을 비교했을까?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>자료 비교</h3>
+      <p>연소 엔탈피·질량당 에너지·연료 밀도·저장 온도·비추력 조사</p>
+    </div>
+    <div class="card">
+      <h3>정량 계산</h3>
+      <p>1 MJ를 얻는 데 필요한 연료 질량과 저장 부피를 계산하고 같은 기준으로 환산</p>
+    </div>
+    <div class="card">
+      <h3>현실 조건</h3>
+      <p>연료탱크·극저온 보관·상변화·탄소 침착·수송·경제성 고려</p>
+    </div>
+  </div>
+  <div class="callout">
+    같은 산화제(액체산소)를 쓰는 조합을 중심으로 비추력의 일반적 경향도 비교하였다.
+    실제 비추력은 엔진 구조·혼합비·압력에 따라 달라진다.
+  </div>
+</section>
+
+<!-- 슬라이드 6 -->
+<section class="slide">
+  <div class="eyebrow">STEP 3 · 핵심 결과</div>
+  <h2>연료별 강점과 단점</h2>
+  <div class="table-scroll">
+    <table>
+      <tr>
+        <th>기준</th>
+        <th>액체수소</th>
+        <th>액체메탄</th>
+        <th>케로신</th>
+      </tr>
+      <tr>
+        <td>질량당 에너지 (MJ/kg)</td>
+        <td>120</td><td>50</td><td>43</td>
+      </tr>
+      <tr>
+        <td>부피당 에너지 (MJ/L)</td>
+        <td>8.5</td><td>21</td><td>34.8</td>
+      </tr>
+      <tr>
+        <td>저장 상태</td>
+        <td>약 −253℃ 극저온</td>
+        <td>약 −162℃ 극저온</td>
+        <td>상온 액체</td>
+      </tr>
+      <tr>
+        <td>비추력 경향</td>
+        <td>높음</td><td>중간</td><td>상대적으로 낮음</td>
+      </tr>
+      <tr>
+        <td>탄소 찌꺼기</td>
+        <td>연료 유래 없음</td>
+        <td>상대적으로 적음</td>
+        <td>코킹 관리 중요</td>
+      </tr>
+    </table>
+  </div>
+  <p class="note">
+    발열량은 연료 자체의 저위발열량(LHV) 근사값.
+    산화제·탱크 질량은 제외함. RP-1은 혼합물로 값이 달라질 수 있음.
+  </p>
+</section>
+
+<!-- 슬라이드 7 -->
+<section class="slide">
+  <div class="eyebrow">STEP 4 · 가장 중요한 증거</div>
+  <h2>에너지 밀도의 순위가 바뀐다</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="panel-title">질량당 에너지 · MJ/kg</div>
+      <div id="massChart" class="bar-chart"></div>
+    </div>
+    <div class="card">
+      <div class="panel-title">부피당 에너지 · MJ/L</div>
+      <div id="volChart" class="bar-chart"></div>
+    </div>
+  </div>
+  <div class="callout">
+    수소는 <b>질량당 에너지 1위</b>지만 부피당 에너지는 가장 낮다.
+    케로신은 그 반대다. '좋은 연료'의 답은 무엇을 우선하는지에 따라 달라진다.
+  </div>
+</section>
+
+<!-- 슬라이드 8 -->
+<section class="slide">
+  <div class="eyebrow">STEP 3~4 · 추가 증거</div>
+  <h2>저장·수송과 연소 잔류물</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>❄️ 극저온 관리</h3>
+      <p>
+        액체수소는 약 −253℃, 액체메탄은 약 −162℃에서 저장.
+        단열과 기화 손실 관리가 필요하다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>🛢️ 상온 저장</h3>
+      <p>
+        케로신은 상온 액체로 저장할 수 있어 극저온 유지 부담이 작고
+        부피당 에너지가 높다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>🔬 탄소 침착</h3>
+      <p>
+        수소에는 탄소가 없다. 메탄과 케로신은 조건에 따라
+        그을음·코킹이 나타날 수 있으며 케로신에서 관리 부담이 큰 편이다.
+      </p>
+    </div>
+  </div>
+  <p class="note">
+    습도 자체보다 온도·압력·단열·수분 오염 방지가 실제 운용의 핵심이다.
+    가스 상태의 연소 생성물과 엔진 내부에 쌓이는 고체 침착물은 구분한다.
+  </p>
+</section>
+
+<!-- 슬라이드 9 -->
+<section class="slide">
+  <div class="eyebrow">STEP 5 · 최종 답</div>
+  <h2>우리 모둠은 이렇게 판단했다</h2>
+  <div class="card">
+    <p class="question">
+      가장 좋은 로켓 연료는
+      <span class="green">하나로 정해져 있지 않다.</span>
+    </p>
+    <p>
+      높은 비추력과 질량 절감은 액체수소에 유리하지만 저장 부담이 크다.
+      케로신은 저장·부피에서 유리하나 추진 효율과 탄소 침착에 불리할 수 있다.
+      메탄은 중간적 특성을 가진다.
+    </p>
+  </div>
+  <div class="callout">
+    따라서 로켓 목적과 운용 환경에 따라 에너지·추진력·청정성·저장성·수송성·경제성에
+    서로 다른 중요도를 부여해야 한다.
+  </div>
+</section>
+
+<!-- 슬라이드 10 -->
+<section class="slide">
+  <div class="eyebrow">STEP 5 · 정량적 의사결정</div>
+  <h2>7개 기준의 가중평가 공식</h2>
+  <div class="formula">
+    Sᵢ = wₘMᵢ + wᵥVᵢ + wₚPᵢ + w꜀Cᵢ + wₜTᵢ + wₗLᵢ + wₑEᵢ
+    <br>
+    <small>가중치의 합 = 1, 각 기준의 점수는 0~100</small>
+  </div>
+  <div class="grid" style="margin-top:17px">
+    <div class="card">
+      <h3>M · V · P</h3>
+      <p>질량당 에너지 · 부피당 에너지 · 비추력</p>
+    </div>
+    <div class="card">
+      <h3>C · T</h3>
+      <p>연소 청정성 · 저장 유용성</p>
+    </div>
+    <div class="card">
+      <h3>L · E</h3>
+      <p>수송·보관 유용성 · 경제 여건지수</p>
+    </div>
+  </div>
+  <p class="note">
+    연소 엔탈피는 에너지 밀도 계산 근거로 사용하여 중복 평가를 줄였다.
+    질량·부피·비추력은 수치에 근거해 정규화하며 나머지는 통일된 평가 규칙이 필요하다.
+  </p>
+</section>
+
+<!-- 슬라이드 11 -->
+<section class="slide">
+  <div class="eyebrow">STEP 5 · 점수 산출 방식</div>
+  <h2>공식은 어떻게 만들어졌을까?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>① 조사</h3>
+      <p>세 연료의 물리·화학·운용 지표를 수집한다.</p>
+    </div>
+    <div class="card">
+      <h3>② 정규화</h3>
+      <p>
+        서로 단위가 다른 항목을 0~100점으로 바꾼다.<br>
+        혜택형 예: 100 × (값/최댓값)
+      </p>
+    </div>
+    <div class="card">
+      <h3>③ 가중치</h3>
+      <p>
+        로켓 목적에 따라 각 항목의 중요도를 정하고 총합을 100%로 맞춘다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>④ 계산·검증</h3>
+      <p>
+        가중합 점수로 순위를 구하고 중요도가 달라질 때
+        순위가 뒤집히는지 확인한다.
+      </p>
+    </div>
+  </div>
+  <div class="callout">
+    주의: 현재 경제·운송·저장·청정성 점수는 예시 가정이다.
+    실제 연료 가격·보일오프·정비 비용 등으로 보완해야 한다.
+  </div>
+</section>
+
+<!-- 슬라이드 12: 실시간 가중치 조절 -->
+<section class="slide" id="interactive">
+  <div class="eyebrow">실시간 실험 · 발표의 핵심</div>
+  <h2>가중치를 바꾸면 최적 연료도 바뀔까?</h2>
+  <p class="muted">
+    프리셋을 선택하거나 아래 슬라이더를 움직여 보자.
+    입력값은 자동으로 합계 100%가 되도록 환산된다.
+  </p>
+  <div class="presets">
+    <button onclick="preset('balanced')">⚖️ 균형형</button>
+    <button onclick="preset('upper')">🚀 고효율 우주 상단</button>
+    <button onclick="preset('budget')">📦 예산·수송 중심</button>
+    <button onclick="preset('reuse')">♻️ 재사용·청정성</button>
+  </div>
+
+  <div class="sliders" id="sliders"></div>
+
+  <h3>현재 조건의 종합점수</h3>
+  <div id="results" class="result"></div>
+  <div id="winner" class="callout"></div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="panel-title">실시간 순위 그래프</div>
+    <div class="bar-chart" id="scoreChart"></div>
+  </div>
+  <p class="note">
+    시연용 점수: 질량당 에너지 [100,42,36], 부피당 에너지 [24,60,100],
+    비추력 [100,84,70], 청정성 [100,80,35], 저장 [15,50,95],
+    수송 [15,55,95], 경제성 [25,65,85].
+    뒤 4개는 근거 실측 점수가 아니라 탐구를 위한 임시 가정.
+    실제 로켓 설계의 확정 순위가 아니다.
+  </p>
+</section>
+
+<!-- 슬라이드 13 -->
+<section class="slide">
+  <div class="eyebrow">STEP 5 · 결과의 한계</div>
+  <h2>언제 결론이 달라질까?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>상단 로켓</h3>
+      <p>
+        비추력과 질량 절감이 우선이면 액체수소에 유리한 가중치가 적용된다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>발사체 저장·예산</h3>
+      <p>
+        탱크 부피·경제성·운송 편리성이 중요하면
+        케로신의 적합도가 높아질 수 있다.
+      </p>
+    </div>
+    <div class="card">
+      <h3>재사용성</h3>
+      <p>
+        탄소 침착 감소와 관리 부담을 중시하면
+        액체메탄의 경쟁력이 커질 수 있다.
+      </p>
+    </div>
+  </div>
+  <div class="callout">
+    산화제 질량, 연료·산화제 혼합비, 탱크 구조, 연소실 압력,
+    저장 기간, 실제 비용을 넣으면 순위가 달라질 수 있다.
+  </div>
+</section>
+
+<!-- 슬라이드 14 -->
+<section class="slide">
+  <div class="eyebrow">STEP 6 · 다음 질문</div>
+  <h2>새롭게 생긴 탐구 질문</h2>
+  <div class="card">
+    <p class="question">
+      가중치를 어떻게 변경할 때 최적 연료가 바뀌는가?
+      실제 발사체의 설계·운용 자료로 평가해도 이 결과가 유지될까?
+    </p>
+  </div>
+  <div class="callout">
+    후속 연구: 실제 비용·보일오프·엔진 비추력 자료를 수집하고
+    <b>가중치 민감도 분석</b>을 통해 연료 순위가 바뀌는 경계조건 찾기
+  </div>
+</section>
+
+<!-- 슬라이드 15 -->
+<section class="slide sources">
+  <div class="eyebrow">자료 출처</div>
+  <h2>참고 자료 및 해석 주의</h2>
+  <div class="card">
+    <ul>
+      <li>
+        미국 에너지부(DOE),
+        <a href="https://www.energy.gov/eere/fuelcells/hydrogen-storage" target="_blank">
+          Hydrogen Storage
+        </a> — 수소 에너지 밀도·저장
+      </li>
+      <li>
+        미국 국립표준기술연구소(NIST),
+        <a href="https://www.nist.gov/" target="_blank">
+          Thermophysical Properties Measurements of Rocket Propellants RP-1 and RP-2
+        </a> — 케로신계 연료 물성
+      </li>
+      <li>
+        미국 에너지부(DOE),
+        <a href="https://www.energy.gov/eere/fuelcells/hydrogen-delivery" target="_blank">
+          Hydrogen Delivery
+        </a> — 액체수소 수송·극저온 저장
+      </li>
+      <li>
+        미국 에너지부 AFDC,
+        <a href="https://afdc.energy.gov/fuels/properties" target="_blank">
+          Fuel Properties Comparison
+        </a> — 연료 발열량 비교
+      </li>
+    </ul>
+  </div>
+  <p class="note">
+    이 자료의 수치와 시연 가중평가 점수는 교육용 비교 근사치다.
+    연료 자체의 에너지와 실제 발사체의 전체 성능은 다르며,
+    가중평가 모델은 모둠이 개발한 가설 검토용이다.
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <div class="progress" id="progress">1 / 15</div>
+  <div class="actions">
+    <button onclick="move(-1)">← 이전</button>
+    <button onclick="move(1)">다음 →</button>
+  </div>
+</footer>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://dshs-app-5af42-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let calendar, gradeChart;
+// 슬라이드 이동
+const slides = [...document.querySelectorAll('.slide')];
+let page = 0;
 
-    const DSHS_SUBJECTS = ["문학", "대수", "미적분1", "영어1", "영어 발표와 토론", "한국지리 탐구", "세계사", "경제", "현대사회와 윤리", "국제 관계의 이해", "국제 관계와 국제기구", "물리학", "화학", "생명과학", "지구과학", "로봇과 공학세계", "인공지능 기초", "생활과학 탐구", "화법과 언어", "주제 탐구 독서", "확률과 통계", "미적분2", "미디어 영어", "영어 독해와 작문", "세계시민과 지리", "사회와 문화", "윤리와 사상", "사회 탐구 방법", "정치", "법과 사회", "기후변화와 지속가능한 세계", "역학과 에너지", "물질과 에너지", "세포와 물질대사", "지구시스템과학", "물리학 실험", "생명과학 실험", "과학과제 연구", "창의 공학 설계", "데이터 과학", "자율", "진로", "스포츠생활1", "스포츠생활2", "동아리"];
-    
-    // 모의고사 전용 과목 리스트
-    const MOCK_SUBJECTS = ["국어", "수학", "영어", "한국사", "통합사회", "통합과학"];
+function showSlide(n) {
+  page = Math.min(slides.length - 1, Math.max(0, n));
+  slides.forEach((s, i) => s.classList.toggle('active', i === page));
+  document.getElementById('progress').textContent =
+    `${page + 1} / ${slides.length}`;
+  window.scrollTo({top: 0, behavior: 'instant'});
+}
+function move(n) { showSlide(page + n); }
 
-    function showTab(id, b) {
-        document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); b.classList.add('active');
-        if(id === 'schedule') { setTimeout(() => { calendar.render(); calendar.updateSize(); }, 100); renderEventList(); }
-        if(id === 'grade') { renderGrades(); updateChart('내신'); }
-    }
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') move(1);
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') move(-1);
+  if (e.key.toLowerCase() === 'f' && !document.fullscreenElement)
+    document.documentElement.requestFullscreen?.();
+});
 
-    function initTT() {
-        let h = `<tr><th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th></tr>`;
-        for(let i=1; i<=7; i++) {
-            h += `<tr><td style="background:rgba(0,0,0,0.2); font-weight:bold; color:var(--text-gray);">${i}</td>` + Array(5).fill(0).map((_,j)=>`<td><select class="tt-select" data-id="${i}-${j}" onchange="saveTT()"><option value="">-</option>${DSHS_SUBJECTS.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></td>`).join('') + `</tr>`;
-        }
-        document.getElementById('mainTT').innerHTML = h;
-        const saved = JSON.parse(localStorage.getItem('DSHS_TT') || '{}');
-        document.querySelectorAll('.tt-select').forEach(s => { if(saved[s.dataset.id]) s.value = saved[s.dataset.id]; });
-        updateGradeSubList();
-    }
-    
-    function saveTT() { const d = {}; document.querySelectorAll('.tt-select').forEach(s => d[s.dataset.id] = s.value); localStorage.setItem('DSHS_TT', JSON.stringify(d)); }
+// 기본 그래프
+const names = ['액체수소', '액체메탄', '케로신'];
+const colors = ['#56a7ff', '#3ed6b0', '#ffb45b'];
 
-    function updateGradeSubList() {
-        const type = document.getElementById('g_type').value;
-        const targetList = (type === '모의') ? MOCK_SUBJECTS : DSHS_SUBJECTS;
-        document.getElementById('g_sub_select').innerHTML = `<option value="">과목 선택</option>` + targetList.map(s=>`<option value="${s}">${s}</option>`).join('');
-    }
+function bars(id, vals, max, unit) {
+  document.getElementById(id).innerHTML = vals.map((v, i) =>
+    `<div class="bar-row">
+      <span>${names[i]}</span>
+      <div class="track">
+        <div class="fill" style="background:${colors[i]};width:${100*v/max}%"></div>
+      </div>
+      <b>${Number(v).toFixed(v % 1 ? 1 : 0)} ${unit}</b>
+    </div>`
+  ).join('');
+}
 
-    function renderTodo() {
-        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
-        document.getElementById('todoList').innerHTML = list.map((item, idx) => ` <div class="list-item"><span>✅ ${item}</span> <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--point-maroon); font-weight:bold; cursor:pointer;">✕</button></div> `).join('') || "<p style='text-align:center; color:var(--text-gray); font-size:0.8rem;'>계획이 없습니다.</p>";
-    }
-    function addTodo() { 
-        const input = document.getElementById('todoIn'); if(!input.value.trim()) return;
-        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
-        list.push(input.value.trim()); localStorage.setItem('DSHS_TODO', JSON.stringify(list));
-        input.value = ""; renderTodo(); 
-    }
-    function deleteTodo(idx) { 
-        const list = JSON.parse(localStorage.getItem('DSHS_TODO') || '[]');
-        list.splice(idx, 1); localStorage.setItem('DSHS_TODO', JSON.stringify(list)); renderTodo(); 
-    }
+bars('massChart', [120, 50, 43], 120, 'MJ/kg');
+bars('volChart', [8.5, 21, 34.8], 35, 'MJ/L');
 
-    function saveEvent() {
-        const title = document.getElementById('evTitle').value, date = document.getElementById('evDate').value, editId = document.getElementById('editEvId').value;
-        if(!title || !date) return alert("내용을 입력하세요.");
-        let evs = JSON.parse(localStorage.getItem('DSHS_EVS') || '[]');
-        if(editId) { const idx = evs.findIndex(e => e.id == editId); evs[idx] = { ...evs[idx], title, start: date }; } 
-        else { evs.push({ id: Date.now(), title, start: date, allDay: true, backgroundColor: '#fbc02d', textColor: '#1c2635', borderColor: '#fbc02d' }); }
-        localStorage.setItem('DSHS_EVS', JSON.stringify(evs));
-        resetEvForm(); refreshCalendar(); renderEventList();
-    }
-    function renderEventList() {
-        const evs = JSON.parse(localStorage.getItem('DSHS_EVS') || '[]');
-        document.getElementById('eventList').innerHTML = evs.sort((a,b)=>new Date(a.start)-new Date(b.start)).map(e => ` <div class="list-item"><span style="font-size:0.85rem;"><b>${e.start}</b> ${e.title}</span> <div><button class="btn-sub" onclick="editEv(${e.id})">수정</button> <button class="btn-sub" style="color:var(--point-maroon);" onclick="delEv(${e.id})">삭제</button></div></div> `).join('') || "일정이 없습니다.";
-    }
-    function editEv(id) {
-        const e = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]').find(i => i.id == id);
-        document.getElementById('evTitle').value = e.title; document.getElementById('evDate').value = e.start;
-        document.getElementById('editEvId').value = e.id; document.getElementById('evEditorTitle').innerText = "📝 일정 수정";
-        document.getElementById('cancelEvBtn').style.display = "inline-block";
-    }
-    function delEv(id) { if(confirm("삭제하시겠습니까?")) { let evs = JSON.parse(localStorage.getItem('DSHS_EVS')||'[]'); evs = evs.filter(e=>e.id!=id); localStorage.setItem('DSHS_EVS', JSON.stringify(evs)); refreshCalendar(); renderEventList(); } }
-    function resetEvForm() { document.getElementById('evTitle').value=""; document.getElementById('evDate').value=""; document.getElementById('editEvId').value=""; document.getElementById('evEditorTitle').innerText="📍 일정 추가/수정"; document.getElementById('cancelEvBtn').style.display="none"; }
-    function refreshCalendar() { calendar.removeAllEvents(); calendar.addEventSource(JSON.parse(localStorage.getItem('DSHS_EVS')||'[]')); }
+// 평가 모델
+const metrics = [
+  '질량당 에너지',
+  '부피당 에너지',
+  '비추력',
+  '연소 청정성',
+  '저장 유용성',
+  '수송·보관 유용성',
+  '경제 여건지수'
+];
 
-    function toggleGradeOptions() {
-        const type = document.getElementById('g_type').value;
-        updateGradeSubList();
-        document.getElementById('opt_inner').innerHTML = (type === '내신') ? `<select id="g_term"><option value="1학기">1학기</option><option value="2학기">2학기</option></select><select id="g_exam"><option value="중간고사">중간고사</option><option value="기말고사">기말고사</option></select>` : `<select id="g_exam" style="grid-column: span 2;"><option value="3월">3월</option><option value="6월">6월</option><option value="9월">9월</option><option value="11월">11월</option></select>`;
-    }
-    function saveGrade() {
-        const sub = document.getElementById('g_sub_select').value;
-        const val = parseFloat(document.getElementById('g_val').value);
-        if(!sub || isNaN(val)) return alert("정보를 모두 입력하세요.");
-        const g = { id: Date.now(), type: document.getElementById('g_type').value, year: document.getElementById('g_year').value, term: document.getElementById('g_term')?.value || '', exam: document.getElementById('g_exam').value, sub: sub, val: val, date: new Date().getTime() };
-        let gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]'); gs.push(g);
-        localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); updateChart(g.type);
-    }
-    function renderGrades() {
-        const gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]');
-        document.getElementById('gradeHistory').innerHTML = gs.sort((a,b)=>b.date-a.date).map(g => `<div class="list-item"><span><b>${g.year} ${g.exam}</b><br>${g.sub}</span><span style="color:var(--point-gold); font-weight:800;">${g.val}등급</span><button onclick="delGrade(${g.id})" style="border:none; color:var(--point-maroon); background:none;">✕</button></div>`).join('') || "기록이 없습니다.";
-    }
-    function delGrade(id) { let gs = JSON.parse(localStorage.getItem('DSHS_GRS')||'[]'); gs = gs.filter(g=>g.id!=id); localStorage.setItem('DSHS_GRS', JSON.stringify(gs)); renderGrades(); }
-    
-    function updateChart(type) {
-        const gs = JSON.parse(localStorage.getItem('DSHS_GRS') || '[]').filter(g => g.type === type).sort((a,b)=>a.date-b.date);
-        if(gradeChart) gradeChart.destroy();
-        gradeChart = new Chart(document.getElementById('gradeChart'), {
-            type: 'line',
-            data: { labels: gs.map(g=>`${g.year.charAt(0)} ${g.exam}`), datasets: [{ label: type, data: gs.map(g=>g.val), borderColor: '#fbc02d', tension: 0.3, fill: true, backgroundColor: 'rgba(251, 192, 45, 0.1)', pointBackgroundColor: '#7b1418' }] },
-            options: { 
-                scales: { 
-                    y: { 
-                        reverse: true, // 1등급이 위로 가도록
-                        min: 1, 
-                        max: 5, 
-                        grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#fff', stepSize: 1 } 
-                    }, 
-                    x: { ticks: { color: '#fff' } } 
-                }, 
-                plugins: { legend: { display: false } } 
-            }
-        });
-    }
+// 연료 순서: 액체수소, 액체메탄, 케로신
+// 항목 순서: metrics 배열과 동일
+const scores = [
+  [100, 24, 100, 100, 15, 15, 25],
+  [42, 60, 84, 80, 50, 55, 65],
+  [36, 100, 70, 35, 95, 95, 85]
+];
 
-    document.addEventListener('DOMContentLoaded', () => {
-        initTT(); toggleGradeOptions(); renderTodo();
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-            initialView: 'dayGridMonth', locale: 'ko', contentHeight: 'auto', dayMaxEvents: true, fixedWeekCount: false,
-            headerToolbar: { left: 'prev', center: 'title', right: 'next today' },
-            events: JSON.parse(localStorage.getItem('DSHS_EVS')||'[]') 
-        });
-        calendar.render();
+// 상황별 가중치
+const choices = {
+  balanced: [15, 15, 20, 15, 10, 10, 15],
+  upper:    [25, 10, 35, 10, 10,  5,  5],
+  budget:   [10, 15, 10,  5, 15, 20, 25],
+  reuse:    [10, 10, 20, 30, 10, 10, 10]
+};
+
+let w = [...choices.balanced];
+
+function preset(k) {
+  w = [...choices[k]];
+  render();
+}
+
+function render(updateControls = true) {
+  const total = w.reduce((a, b) => a + b, 0);
+
+  if (updateControls) {
+    document.getElementById('sliders').innerHTML = metrics.map((m, i) =>
+      `<div class="sliderbox">
+        <label>
+          <span>${m}</span>
+          <strong>${total ? (w[i]*100/total).toFixed(1) : 0}%</strong>
+        </label>
+        <input
+          aria-label="${m} 가중치"
+          type="range"
+          min="0"
+          max="50"
+          step="1"
+          value="${w[i]}"
+          oninput="w[${i}]=+this.value;render(false)">
+      </div>`
+    ).join('');
+  } else {
+    document.querySelectorAll('.sliderbox label strong').forEach((el, i) => {
+      el.textContent = (total ? (w[i]*100/total).toFixed(1) : 0) + '%';
     });
+  }
+
+  const ranked = names.map((n, i) => ({
+    name: n,
+    i,
+    value: total
+      ? scores[i].reduce((acc, v, j) => acc + v * w[j], 0) / total
+      : 0
+  })).sort((a, b) => b.value - a.value);
+
+  document.getElementById('results').innerHTML = ranked.map((o, rank) =>
+    `<div class="card">
+      <div class="pill">${rank + 1}위</div>
+      <h3 style="color:${colors[o.i]}">${o.name}</h3>
+      <div class="big">${o.value.toFixed(1)}점</div>
+    </div>`
+  ).join('');
+
+  document.getElementById('winner').innerHTML = total
+    ? `현재 조건에서는 <b>${ranked[0].name}</b>이(가) 1위.
+       가중치를 바꿔 순위가 달라지는지 관찰하자.`
+    : '가중치를 최소 하나 이상 지정해 주세요.';
+
+  document.getElementById('scoreChart').innerHTML = ranked.map(o =>
+    `<div class="bar-row">
+      <span>${o.name}</span>
+      <div class="track">
+        <div class="fill" style="background:${colors[o.i]};width:${o.value}%"></div>
+      </div>
+      <b>${o.value.toFixed(1)}점</b>
+    </div>`
+  ).join('');
+}
+
+render();
 </script>
+
 </body>
 </html>
